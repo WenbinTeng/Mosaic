@@ -1,4 +1,4 @@
-#include "top.h"
+#include "top.hpp"
 
 #include "xil_printf.h"
 #include "xiltimer.h"
