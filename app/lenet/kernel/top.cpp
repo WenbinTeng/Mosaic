@@ -1,4 +1,4 @@
-#include "top.h"
+#include "top.hpp"
 
 int lenet_kernel_0(volatile DTYPE input[32][32],
                    volatile DTYPE c1_weights[6][5][5],

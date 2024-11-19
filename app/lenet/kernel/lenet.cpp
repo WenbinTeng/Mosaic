@@ -1,4 +1,4 @@
-#include "lenet.h"
+#include "lenet.hpp"
 
 void layer_c1(volatile DTYPE input[32][32],
               volatile DTYPE weights[6][5][5],
