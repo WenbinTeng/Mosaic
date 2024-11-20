@@ -36,7 +36,7 @@ void layer_s2(volatile DTYPE input[6][28][28],
             for (j = 0; j < 2; j++) {
 #pragma HLS PIPELINE
                 data = input[c][(h*2)+i][(w*2)+j];
-                cond = (max_value > input[c][(h*2)+i][(w*2)+j]);
+                cond = (max_value > data);
                 max_value = cond ? max_value : data;
             }
         }
@@ -111,8 +111,8 @@ void layer_s4(volatile DTYPE input[16][10][10],
 			for(j = 0; j < 2; j++) {
 #pragma HLS PIPELINE
 				data = input[c][(h*2)+i][(w*2)+j];
-				cond = max_value > input[c][(h*2)+i][(w*2)+j];
-				max_value = (max_value > data) ? max_value : data;
+				cond = (max_value > data);
+				max_value = cond ? max_value : data;
 			}
 		}
 		output[c][h][w] = (max_value > 0) ? max_value : 0.0;
