@@ -137,7 +137,7 @@ void layer_c5(volatile DTYPE input[16][5][5],
         for (j = 0; j < 5; j++)
 #pragma HLS PIPELINE
 			weights_buff[ci][i][j] = weights[co][ci][i][j];
-		bias_buff = bias[0];
+		bias_buff = bias[co];
 
         l1:for (ci = 0; ci < 16; ci++) {
 			l2:for(i = 0; i < 5; i++) {
