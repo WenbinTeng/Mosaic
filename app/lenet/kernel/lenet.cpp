@@ -128,7 +128,7 @@ void layer_c5(volatile DTYPE input[16][5][5],
     DTYPE tmp;
     DTYPE sum0, sum1, sum2, sum3, sum4, sum5, sum6, sum7, sum8, sum9;
     DTYPE conv5_partial_sum[400];
-#pragma HLS ARRAY_PARTITION variable=conv5_partial_sum cyclic factor=10 dim=1
+#pragma HLS ARRAY_PARTITION variable=conv5_partial_sum type=cyclic factor=10 dim=1
     DTYPE weights_buff[16][5][5];
     DTYPE bias_buff;
 
