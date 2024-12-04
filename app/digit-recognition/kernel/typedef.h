@@ -6,6 +6,7 @@
 #define CLASS_SIZE 1800
 #define NUM_TEST 2000
 #define DIGIT_WIDTH 4
+#define NUM_LANE 4
 
 // typedefs
 typedef unsigned long long DigitType;
@@ -17,6 +18,6 @@ typedef ap_uint<256>  WholeDigitType;
 
 // parameters
 #define K_CONST 3
-#define PAR_FACTOR 40
+#define PAR_FACTOR 10
 
 #endif
