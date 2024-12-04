@@ -162,6 +162,7 @@ void inference(WholeDigitType local_training_set[NUM_TRAINING / PAR_FACTOR],
 
     // This array stores K minimum distances per training set
     int knn_set[NUM_LANE * K_CONST];
+#pragma HLS array_partition variable = knn_set complete dim = 0
     int min_distance_list[K_CONST];
     int label_list[K_CONST];
 
