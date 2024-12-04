@@ -117,10 +117,8 @@ void knn_vote_final(hls::stream<int> &knn_set_stream,
 
     int min_distance_list[K_CONST];
 #pragma HLS array_partition variable = min_distance_list complete dim = 0
-
     int label_list[K_CONST];
 #pragma HLS array_partition variable = label_list complete dim = 0
-
     int vote_list[10];
 #pragma HLS array_partition variable = vote_list complete dim = 0
 
@@ -131,13 +129,13 @@ void knn_vote_final(hls::stream<int> &knn_set_stream,
         INIT_1:for (int i = 0; i < K_CONST; i++) {
             label_list[i] = knn_set_stream.read();
         }
-        INIT:for (int i = 0; i < 10; i++) {
-    #pragma HLS unroll
+        INIT_2:for (int i = 0; i < 10; i++) {
+#pragma HLS unroll
             vote_list[i] = 0;
         }
 
         INCREMENT:for (int i = 0; i < K_CONST; i++) {
-    #pragma HLS pipeline
+#pragma HLS pipeline
             vote_list[label_list[i]] += 1;
         }
 
@@ -145,7 +143,7 @@ void knn_vote_final(hls::stream<int> &knn_set_stream,
         max_vote = 0;
 
         VOTE:for (int i = 0; i < 10; i++) {
-    #pragma HLS unroll
+#pragma HLS unroll
             if (vote_list[i] >= vote_list[max_vote]) {
                 max_vote = i;
             }
