@@ -55,10 +55,10 @@ void update_knn(WholeDigitType test_inst,
 }
 
 void read_training_data_block(WholeDigitType global_training_set[NUM_TRAINING],
-                              WholeDigitType local_training_set[NUM_TRAINING / PAR_FACTOR],
+                              hls::stream<WholeDigitType> &training_data_stream,
                               int start) {
     for (int i = 0; i < NUM_TRAINING / PAR_FACTOR; i++) {
-        local_training_set[i] = global_training_set[start * NUM_TRAINING / PAR_FACTOR + i];
+        training_data_stream.write(global_training_set[start * NUM_TRAINING / PAR_FACTOR + i]);
     }
 }
 
@@ -117,8 +117,10 @@ void knn_vote_final(hls::stream<int> &knn_set_stream,
 
     int min_distance_list[K_CONST];
 #pragma HLS array_partition variable = min_distance_list complete dim = 0
+
     int label_list[K_CONST];
 #pragma HLS array_partition variable = label_list complete dim = 0
+
     int vote_list[10];
 #pragma HLS array_partition variable = vote_list complete dim = 0
 
@@ -129,13 +131,13 @@ void knn_vote_final(hls::stream<int> &knn_set_stream,
         INIT_1:for (int i = 0; i < K_CONST; i++) {
             label_list[i] = knn_set_stream.read();
         }
-        INIT_2:for (int i = 0; i < 10; i++) {
-#pragma HLS unroll
+        INIT:for (int i = 0; i < 10; i++) {
+    #pragma HLS unroll
             vote_list[i] = 0;
         }
 
         INCREMENT:for (int i = 0; i < K_CONST; i++) {
-#pragma HLS pipeline
+    #pragma HLS pipeline
             vote_list[label_list[i]] += 1;
         }
 
@@ -143,7 +145,7 @@ void knn_vote_final(hls::stream<int> &knn_set_stream,
         max_vote = 0;
 
         VOTE:for (int i = 0; i < 10; i++) {
-#pragma HLS unroll
+    #pragma HLS unroll
             if (vote_list[i] >= vote_list[max_vote]) {
                 max_vote = i;
             }
@@ -153,16 +155,29 @@ void knn_vote_final(hls::stream<int> &knn_set_stream,
     }
 }
 
-void inference(WholeDigitType local_training_set[NUM_TRAINING / PAR_FACTOR],
+void PE(hls::stream<WholeDigitType> &training_data_stream,
                hls::stream<WholeDigitType> &test_data_stream_in,
                hls::stream<WholeDigitType> &test_data_stream_out,
                hls::stream<int> &knn_set_stream_in,
                hls::stream<int> &knn_set_stream_out,
                LabelType label_in) {
 
+    const int num_lane = NUM_LANE;
+    static WholeDigitType training_set[NUM_TRAINING / PAR_FACTOR];
+#pragma HLS array_partition variable = training_set block factor = num_lane dim = 0
+    static int index = 0;
+
+    if (index == 0) {
+        //Store the local training set
+        STORE_LOCAL: for(int i = 0; i < NUM_TRAINING / PAR_FACTOR; i++) {
+#pragma HLS pipeline
+            training_set[i] = training_data_stream.read();
+        }
+        index = 1;
+    }
+
     // This array stores K minimum distances per training set
     int knn_set[NUM_LANE * K_CONST];
-#pragma HLS array_partition variable = knn_set complete dim = 0
     int min_distance_list[K_CONST];
     int label_list[K_CONST];
 
@@ -183,7 +198,7 @@ void inference(WholeDigitType local_training_set[NUM_TRAINING / PAR_FACTOR],
 #pragma HLS pipeline
         LANES:for (int j = 0; j < NUM_LANE; j++) {
 #pragma HLS unroll
-            WholeDigitType train_inst = local_training_set[j * NUM_TRAINING / PAR_FACTOR / NUM_LANE + i];
+            WholeDigitType train_inst = training_set[j * NUM_TRAINING / PAR_FACTOR / NUM_LANE + i];
             update_knn(test_inst, train_inst, &knn_set[j * K_CONST]);
         }
     }
@@ -198,24 +213,25 @@ void inference(WholeDigitType local_training_set[NUM_TRAINING / PAR_FACTOR],
     }
 
     test_data_stream_out.write(test_inst);
+
+    index++;
+    return;
 }
 
 // top-level hardware function
 void digit_rec(WholeDigitType global_training_set[NUM_TRAINING],
                WholeDigitType global_test_set[NUM_TEST],
                LabelType global_results[NUM_TEST]) {
+#pragma HLS dataflow
 
-    const int unroll_factor = PAR_FACTOR * NUM_LANE;
-    static WholeDigitType training_set[NUM_TRAINING];
-#pragma HLS array_partition variable = training_set block factor = unroll_factor dim = 0
-
+    static hls::stream<WholeDigitType> training_stream_set[PAR_FACTOR];
     static hls::stream<WholeDigitType> test_stream_set[PAR_FACTOR + 1];
     static hls::stream<int> knn_set_stream[PAR_FACTOR + 1];
     static hls::stream<LabelType> result_stream;
 
     LOAD_DATA:for (int i = 0; i < PAR_FACTOR; i++) {
 #pragma HLS pipeline
-        read_training_data_block(global_training_set, &training_set[i * NUM_TRAINING / PAR_FACTOR], i);
+        read_training_data_block(global_training_set, training_stream_set[i], i);
     }
     read_test_data(global_test_set, test_stream_set[0]);
 
@@ -225,11 +241,11 @@ void digit_rec(WholeDigitType global_training_set[NUM_TRAINING],
         }
 
         for (int p = 0; p < PAR_FACTOR; p++) {
-#pragma HLS pipeline
-            inference(&training_set[p * NUM_TRAINING / PAR_FACTOR],
-                      test_stream_set[p], test_stream_set[p + 1],
-                      knn_set_stream[p], knn_set_stream[p + 1],
-                      p / (PAR_FACTOR / 10));
+#pragma HLS unroll
+            PE(training_stream_set[p],
+               test_stream_set[p], test_stream_set[p + 1],
+               knn_set_stream[p], knn_set_stream[p + 1],
+               p / (PAR_FACTOR / 10));
         }
 
         test_stream_set[PAR_FACTOR].read();
