@@ -1,7 +1,7 @@
 #ifndef __TOP_H__
 #define __TOP_H__
 
-#include "lenet.h"
+#include "lenet.hpp"
 
 int lenet_kernel_0(volatile DTYPE input[32][32],
                    volatile DTYPE c1_weights[6][5][5],
