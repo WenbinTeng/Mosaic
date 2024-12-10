@@ -19,7 +19,6 @@
 #pragma SDS data copy(data[0:NUM_FEATURES*NUM_TRAINING/D_VECTOR_SIZE])
 #pragma SDS data zero_copy(label[0:NUM_TRAINING/L_VECTOR_SIZE])
 #pragma SDS data access_pattern(data:SEQUENTIAL, label:SEQUENTIAL, theta:SEQUENTIAL)
-void SgdLR(VectorDataType data[NUM_FEATURES * NUM_TRAINING / D_VECTOR_SIZE],
-           VectorLabelType label[NUM_TRAINING / L_VECTOR_SIZE],
-           VectorFeatureType theta[NUM_FEATURES / F_VECTOR_SIZE],
-           bool readLabels, bool writeOutput);
+void spam_fil(VectorDataType data[NUM_FEATURES * NUM_TRAINING / D_VECTOR_SIZE],
+              VectorLabelType label[NUM_TRAINING / L_VECTOR_SIZE],
+              VectorFeatureType theta[NUM_FEATURES / F_VECTOR_SIZE]);
