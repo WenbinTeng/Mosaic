@@ -112,8 +112,7 @@ void compute_stage2(hls::stream<FeatureType> &theta_stream,
                     hls::stream<DataType> &data_stream,
                     LabelType label,
                     hls::stream<FeatureType> &result_stream,
-                    FeatureType dot) {
-    FeatureType prob = Sigmoid(dot);
+                    FeatureType prob) {
     for (int i = 0; i < NUM_FEATURES / PAR_FACTOR; i++) {
 #pragma HLS pipeline II = 1
         FeatureType theta = theta_stream.read();
@@ -146,9 +145,10 @@ void spam_fil(VectorDataType data[NUM_FEATURES * NUM_TRAINING / D_VECTOR_SIZE],
 #pragma HLS unroll
             dot += compute_stage1(theta_stream_stage_1[p], data_stream_stage_1[p]);
         }
+        FeatureType prob = Sigmoid(dot);
         PAR_LOOP_2:for (int p = 0; p < PAR_FACTOR; p++) {
 #pragma HLS unroll
-            compute_stage2(theta_stream_stage_2[p], data_stream_stage_2[p], training_label, result_stream[p], dot);
+            compute_stage2(theta_stream_stage_2[p], data_stream_stage_2[p], training_label, result_stream[p], prob);
             redirect_theta_stream(result_stream[p], theta_stream_stage_1[p], theta_stream_stage_2[p]);
         }
     }
