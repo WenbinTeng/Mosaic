@@ -10,4 +10,5 @@ int digit_rec_kernel_0(WholeDigitType global_training_set[NUM_TRAINING],
 #pragma HLS INTERFACE m_axi depth=NUM_TEST port=global_results offset=slave bundle=data
 
     digit_rec(global_training_set, global_test_set, global_results);
+    return 0;
 }
