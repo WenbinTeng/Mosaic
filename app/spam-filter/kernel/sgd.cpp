@@ -14,7 +14,7 @@ void read_data_stream(VectorDataType data[NUM_FEATURES / D_VECTOR_SIZE],
 #pragma HLS inline
     for (int i = 0; i < NUM_FEATURES / D_VECTOR_SIZE; i++) {
 #pragma HLS pipeline II = 1
-        VectorFeatureType tmp_data = data[i];
+        VectorDataType tmp_data = data[i];
         for (int j = 0; j < D_VECTOR_SIZE; j++) {
             data_stream_stage_1[(i * D_VECTOR_SIZE + j) % PAR_FACTOR].write(tmp_data.range((j + 1) * DTYPE_TWIDTH - 1, j * DTYPE_TWIDTH));
             data_stream_stage_2[(i * D_VECTOR_SIZE + j) % PAR_FACTOR].write(tmp_data.range((j + 1) * DTYPE_TWIDTH - 1, j * DTYPE_TWIDTH));
@@ -23,48 +23,51 @@ void read_data_stream(VectorDataType data[NUM_FEATURES / D_VECTOR_SIZE],
 }
 
 void read_label_stream(VectorLabelType label[NUM_TRAINING / L_VECTOR_SIZE],
-                       hls::stream<LabelType> &label_stream,
-                       int index) {
+                       hls::stream<LabelType> label_stream[PAR_FACTOR]) {
 #pragma HLS inline
-    VectorLabelType tmp_label = label[index];
-    for (int j = 0; j < L_VECTOR_SIZE; j++)
-        label_stream.write(tmp_label.range((j + 1) * LTYPE_WIDTH - 1, j * LTYPE_WIDTH));
-}
-
-void init_theta(VectorFeatureType theta[NUM_FEATURES / F_VECTOR_SIZE],
-                hls::stream<FeatureType> theta_stream_stage_1[PAR_FACTOR],
-                hls::stream<FeatureType> theta_stream_stage_2[PAR_FACTOR]) {
-#pragma HLS inline
-    for (int i = 0; i < NUM_FEATURES / F_VECTOR_SIZE; i++) {
+    for (int i = 0; i < NUM_TRAINING / L_VECTOR_SIZE; i++) {
+        VectorLabelType tmp_label = label[i];
 #pragma HLS pipeline II = 1
-        VectorFeatureType tmp_data = theta[i];
-        for (int j = 0; j < F_VECTOR_SIZE; j++) {
-            theta_stream_stage_1[(i * F_VECTOR_SIZE + j) % PAR_FACTOR].write(tmp_data.range((j + 1) * FTYPE_TWIDTH - 1, j * FTYPE_TWIDTH));
-            theta_stream_stage_2[(i * F_VECTOR_SIZE + j) % PAR_FACTOR].write(tmp_data.range((j + 1) * FTYPE_TWIDTH - 1, j * FTYPE_TWIDTH));
+        for (int j = 0; j < L_VECTOR_SIZE; j++) {
+            for (int p = 0; p < PAR_FACTOR; p++) {
+#pragma HLS unroll
+                label_stream[p].write(tmp_label.range((j + 1) * LTYPE_WIDTH - 1, j * LTYPE_WIDTH));
+            }
         }
     }
 }
 
-void redirect_theta_stream(hls::stream<FeatureType> &result_stream,
-                           hls::stream<FeatureType> &theta_stream_stage_1,
-                           hls::stream<FeatureType> &theta_stream_stage_2) {
+void load_theta(FeatureType theta_local[NUM_FEATURES],
+                hls::stream<FeatureType> theta_stream_stage_1[PAR_FACTOR],
+                hls::stream<FeatureType> theta_stream_stage_2[PAR_FACTOR]) {
 #pragma HLS inline
-    for (int i = 0; i < NUM_FEATURES / PAR_FACTOR; i++) {
+    for (int i = 0; i < NUM_FEATURES; i++) {
 #pragma HLS pipeline II = 1
-        FeatureType tmp_theta = result_stream.read();
-        theta_stream_stage_1.write(tmp_theta);
-        theta_stream_stage_2.write(tmp_theta);
+        FeatureType tmp_theta = theta_local[i];
+        theta_stream_stage_1[i % PAR_FACTOR].write(tmp_theta);
+        theta_stream_stage_2[i % PAR_FACTOR].write(tmp_theta);
     }
 }
 
-void write_output(hls::stream<FeatureType> theta_stream[PAR_FACTOR],
+void update_theta(hls::stream<FeatureType> result_stream[PAR_FACTOR],
+                  FeatureType theta_local[NUM_FEATURES]) {
+#pragma HLS inline
+    for (int i = 0; i < NUM_FEATURES; i++) {
+#pragma HLS pipeline II = 1
+        FeatureType tmp_theta = result_stream[i % PAR_FACTOR].read();
+        theta_local[i] = tmp_theta;
+    }
+}
+
+void write_output(FeatureType theta_local[NUM_FEATURES],
                   VectorFeatureType theta[NUM_FEATURES / F_VECTOR_SIZE]) {
 #pragma HLS inline
     for (int i = 0; i < NUM_FEATURES / F_VECTOR_SIZE; i++) {
 #pragma HLS pipeline II = 1
         VectorFeatureType tmp_theta = 0;
-        for (int j = 0; j < F_VECTOR_SIZE; j++)
-            tmp_theta.range((j + 1) * FTYPE_TWIDTH - 1, j * FTYPE_TWIDTH) = theta_stream[(i * F_VECTOR_SIZE + j) % PAR_FACTOR].read();
+        for (int j = 0; j < F_VECTOR_SIZE; j++) {
+            tmp_theta.range((j+1)*FTYPE_TWIDTH-1, j*FTYPE_TWIDTH) = theta_local[i * F_VECTOR_SIZE + j];
+        }
         theta[i] = tmp_theta;
     }
 }
@@ -96,8 +99,9 @@ FeatureType Sigmoid(FeatureType exponent) {
     }
 }
 
-FeatureType compute_stage1(hls::stream<FeatureType> &theta_stream,
-                           hls::stream<DataType> &data_stream) {
+void compute_stage_1(hls::stream<FeatureType> &theta_stream,
+                     hls::stream<DataType> &data_stream,
+                     hls::stream<FeatureType> &dot_stream) {
     FeatureType dot = 0;
     for (int i = 0; i < NUM_FEATURES / PAR_FACTOR; i++) {
 #pragma HLS pipeline II = 1
@@ -105,52 +109,66 @@ FeatureType compute_stage1(hls::stream<FeatureType> &theta_stream,
         DataType data = data_stream.read();
         dot += theta * data;
     }
-    return dot;
+    dot_stream.write(dot);
 }
 
-void compute_stage2(hls::stream<FeatureType> &theta_stream,
-                    hls::stream<DataType> &data_stream,
-                    LabelType label,
-                    hls::stream<FeatureType> &result_stream,
-                    FeatureType prob) {
+void compute_stage_2(hls::stream<FeatureType> dot_stream[PAR_FACTOR],
+                     hls::stream<FeatureType> prob_stream[PAR_FACTOR]) {
+    FeatureType dot = 0;
+    for (int i = 0; i < PAR_FACTOR; i++) {
+#pragma HLS pipeline
+        dot += dot_stream[i].read();
+    }
+    FeatureType prob = Sigmoid(dot);
+    for (int i = 0; i < PAR_FACTOR; i++) {
+#pragma HLS pipeline
+        prob_stream[i].write(prob);
+    }
+}
+
+void compute_stage_3(hls::stream<FeatureType> &theta_stream,
+                     hls::stream<DataType> &data_stream,
+                     hls::stream<LabelType> &label_steam,
+                     hls::stream<FeatureType> &prob_stream,
+                     hls::stream<FeatureType> &result_stream) {
+    FeatureType label = label_steam.read();
+    FeatureType prob = prob_stream.read();
     for (int i = 0; i < NUM_FEATURES / PAR_FACTOR; i++) {
-#pragma HLS pipeline II = 1
+#pragma HLS pipeline
         FeatureType theta = theta_stream.read();
         DataType data = data_stream.read();
-        result_stream.write(theta + (-STEP_SIZE * (prob - label) * data));
+        FeatureType result = theta + (-STEP_SIZE * (prob - label) * data);
+        result_stream.write(result);
     }
 }
 
 void spam_fil(VectorDataType data[NUM_FEATURES * NUM_TRAINING / D_VECTOR_SIZE],
               VectorLabelType label[NUM_TRAINING / L_VECTOR_SIZE],
               VectorFeatureType theta[NUM_FEATURES / F_VECTOR_SIZE]) {
-#pragma HLS dataflow
-
+    static FeatureType theta_local[NUM_FEATURES];
+    static hls::stream<LabelType> label_stream[PAR_FACTOR];
     static hls::stream<DataType> data_stream_stage_1[PAR_FACTOR];
     static hls::stream<DataType> data_stream_stage_2[PAR_FACTOR];
-    static hls::stream<LabelType> label_stream;
     static hls::stream<FeatureType> theta_stream_stage_1[PAR_FACTOR];
     static hls::stream<FeatureType> theta_stream_stage_2[PAR_FACTOR];
+    static hls::stream<FeatureType> dot_stream[PAR_FACTOR];
+    static hls::stream<FeatureType> prob_stream[PAR_FACTOR];
     static hls::stream<FeatureType> result_stream[PAR_FACTOR];
 
-    init_theta(theta, theta_stream_stage_1, theta_stream_stage_2);    
+    read_label_stream(label, label_stream);
     TRAIN_LOOP:for (int training_id = 0; training_id < NUM_TRAINING; training_id++) {
-#pragma HLS pipeline
         read_data_stream(&data[training_id * NUM_FEATURES / D_VECTOR_SIZE], data_stream_stage_1, data_stream_stage_2);
-        if (training_id % L_VECTOR_SIZE == 0)
-            read_label_stream(label, label_stream, training_id / L_VECTOR_SIZE);
-        LabelType training_label = label_stream.read();
-        FeatureType dot = 0;
+        load_theta(theta_local, theta_stream_stage_1, theta_stream_stage_2);
         PAR_LOOP_1:for (int p = 0; p < PAR_FACTOR; p++) {
 #pragma HLS unroll
-            dot += compute_stage1(theta_stream_stage_1[p], data_stream_stage_1[p]);
+            compute_stage_1(theta_stream_stage_1[p], data_stream_stage_1[p], dot_stream[p]);
         }
-        FeatureType prob = Sigmoid(dot);
+        compute_stage_2(dot_stream, prob_stream);
         PAR_LOOP_2:for (int p = 0; p < PAR_FACTOR; p++) {
 #pragma HLS unroll
-            compute_stage2(theta_stream_stage_2[p], data_stream_stage_2[p], training_label, result_stream[p], prob);
-            redirect_theta_stream(result_stream[p], theta_stream_stage_1[p], theta_stream_stage_2[p]);
+            compute_stage_3(theta_stream_stage_2[p], data_stream_stage_2[p], label_stream[p], prob_stream[p], result_stream[p]);
         }
+        update_theta(result_stream, theta_local);
     }
-    write_output(theta_stream_stage_1, theta);
+    write_output(theta_local, theta);
 }
