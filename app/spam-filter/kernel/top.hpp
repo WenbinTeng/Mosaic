@@ -5,7 +5,6 @@
 
 void spam_fil_kernel_0(VectorDataType data[NUM_FEATURES * NUM_TRAINING / D_VECTOR_SIZE],
                        VectorLabelType label[NUM_TRAINING / L_VECTOR_SIZE],
-                       VectorFeatureType theta[NUM_FEATURES / F_VECTOR_SIZE],
-                       bool readLabels, bool writeOutput);
+                       VectorFeatureType theta[NUM_FEATURES / F_VECTOR_SIZE]);
 
 #endif
