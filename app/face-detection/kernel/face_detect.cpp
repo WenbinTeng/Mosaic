@@ -3156,7 +3156,7 @@ void image_scalar_stream(hls::stream<data_t> &data_in_stream,
     factor++;
 }
 
-void face_detect(unsigned char data_in[IMAGE_WIDTH],
+void face_detect(unsigned char data[IMAGE_WIDTH],
                  int result_x[RESULT_SIZE],
                  int result_y[RESULT_SIZE],
                  int result_w[RESULT_SIZE],
@@ -3172,7 +3172,7 @@ void face_detect(unsigned char data_in[IMAGE_WIDTH],
     if (counter < IMAGE_HEIGHT) {
         for (int j = 0; j < IMAGE_WIDTH; j++) {
 #pragma HLS pipeline II = 1
-            data_t tmp_data = data_in[j];
+            data_t tmp_data = data[j];
             image_in_stream.write(tmp_data);
         }
         counter++;
