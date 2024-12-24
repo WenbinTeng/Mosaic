@@ -915,15 +915,13 @@ void get_all_data(uint18_t output[12], uint10_t addr_list[12], uint18_t aa[ROWS 
     uint18_t data_from_banks[28];
 #pragma HLS array_partition variable = data_from_banks complete dim = 0
 
-COMPUTE_BANK_AND_OFFSET:
-    for (int i = 0; i < 12; i++) {
+    COMPUTE_BANK_AND_OFFSET:for (int i = 0; i < 12; i++) {
 #pragma HLS unroll
         bank[i] = get_bank(addr_list[i]);
         offset[i] = get_offset(addr_list[i]);
     }
 
-ASSIGN_OFFSET_FOR_BANKS:
-    for (int i = 0; i < 28; i++) {
+    ASSIGN_OFFSET_FOR_BANKS:for (int i = 0; i < 28; i++) {
 #pragma HLS unroll
         offset_for_banks[i] =   (bank[0 ] == i) ? offset[0 ]
                               : (bank[1 ] == i) ? offset[1 ]
@@ -970,8 +968,7 @@ READ_ALL_BANKS:
     data_from_banks[26] = get_data26(offset_for_banks[26], aa);
     data_from_banks[27] = get_data27(offset_for_banks[27], aa);
 
-CHOOSE_DATA:
-    for (int i = 0; i < 12; i++) {
+    CHOOSE_DATA:for (int i = 0; i < 12; i++) {
 #pragma HLS unroll
         output[i] = data_from_banks[bank[i]];
     }
@@ -2749,66 +2746,15 @@ int weak_classifier(int stddev, uint18_t coord[12], int haar_counter, int w_id) 
     return return_value;
 }
 
-int cascade_classifier(point_t pt, int_II II[WINDOW_SIZE][WINDOW_SIZE], int_SII SII[SQ_SIZE][SQ_SIZE]) {
-#pragma HLS inline
-
-    int mean;
-    int stddev = 0;
-    int haar_counter = 0;
-    int w_index = 0;
-    int r_index = 0;
-    int stage_sum = 0;
-
-/* The rectangle co-ordinagte values for all the classifiers */
 #include "haar_dataRcc_with_partitioning.h"
 
-    static uint18_t coord[12];
-#pragma HLS array_partition variable = coord complete dim = 0
+int strong_classifier0(int_II II[WINDOW_SIZE][WINDOW_SIZE], int stddev) {
+#pragma HLS inline
+
     static int s0[9];
 #pragma HLS array_partition variable = s0 complete dim = 0
-    static int s1[16];
-#pragma HLS array_partition variable = s1 complete dim = 0
-    static int s2[27];
-#pragma HLS array_partition variable = s2 complete dim = 0
 
-    /* Banking */
-    /* 12 (x,y,w,h) values corresponding to 3 rectangles that need to be read */
-    uint18_t values[12];
-#pragma HLS array_partition variable = values complete dim = 0
-    /* location/address of those 12 values in the 25 X 25 window */
-    uint10_t addr_list[12];
-#pragma HLS array_partition variable = addr_list complete dim = 0
-    /* among the 12 values which of them are needed to be read from the 25 X 25 window */
-    bit enable_list[12] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
-#pragma HLS array_partition variable = enable_list complete dim = 0
-    uint18_t _II[WINDOW_SIZE * WINDOW_SIZE];
-#pragma HLS array_partition variable = _II complete dim = 0
-
-    COPY_LOOP1:for (int i = 0; i < WINDOW_SIZE; i++) {
-#pragma HLS unroll
-        COPY_LOOP2:for (int j = 0; j < WINDOW_SIZE; j++) {
-#pragma HLS unroll
-            _II[i * 25 + j] = II[i][j];
-        }
-    }
-
-    stddev = SII[0][0] - SII[0][SQ_SIZE - 1] - SII[SQ_SIZE - 1][0] + SII[SQ_SIZE - 1][SQ_SIZE - 1];
-    mean = II[0][0] - II[0][WINDOW_SIZE - 1] - II[WINDOW_SIZE - 1][0] + II[WINDOW_SIZE - 1][WINDOW_SIZE - 1];
-    stddev = (stddev * (WINDOW_SIZE - 1) * (WINDOW_SIZE - 1));
-    stddev = stddev - mean * mean;
-
-    if (stddev > 0)
-        stddev = my_sqrt(stddev);
-    else
-        stddev = 1;
-
-    rect_t tr0, tr1, tr2;
-    int r_id;
-    int w_id;
-    int s;
-
-    /* Hard-Coding Classifier 0 */
-    stage_sum = 0;
+    int stage_sum = 0;
     s0[0] = classifier0(II, stddev);
     s0[1] = classifier1(II, stddev);
     s0[2] = classifier2(II, stddev);
@@ -2822,11 +2768,16 @@ int cascade_classifier(point_t pt, int_II II[WINDOW_SIZE][WINDOW_SIZE], int_SII 
 
     if (stage_sum < 0.4 * stages_thresh_array[0])
         return -1;
+    return 0;
+}
 
-    haar_counter += 9;
+int strong_classifier1(int_II II[WINDOW_SIZE][WINDOW_SIZE], int stddev) {
+#pragma HLS inline
 
-    /* Hard-Coding Classifier 1 */
-    stage_sum = 0;
+    static int s1[16];
+#pragma HLS array_partition variable = s1 complete dim = 0
+
+    int stage_sum = 0;
     s1[0 ] = classifier9 (II, stddev);
     s1[1 ] = classifier10(II, stddev);
     s1[2 ] = classifier11(II, stddev);
@@ -2843,17 +2794,21 @@ int cascade_classifier(point_t pt, int_II II[WINDOW_SIZE][WINDOW_SIZE], int_SII 
     s1[13] = classifier22(II, stddev);
     s1[14] = classifier23(II, stddev);
     s1[15] = classifier24(II, stddev);
-
     stage_sum =  s1[0] + s1[1] + s1[2 ] + s1[3 ] + s1[4 ] + s1[5 ] + s1[6 ] + s1[7 ];
     stage_sum += s1[8] + s1[9] + s1[10] + s1[11] + s1[12] + s1[13] + s1[14] + s1[15];
 
     if (stage_sum < 0.4 * stages_thresh_array[1])
         return -1;
+    return 0;
+}
 
-    haar_counter += 16;
+int strong_classifier2(int_II II[WINDOW_SIZE][WINDOW_SIZE], int stddev) {
+#pragma HLs inline
 
-    /* Hard-Coding Classifier 2 */
-    stage_sum = 0;
+    static int s2[27];
+#pragma HLS array_partition variable = s2 complete dim = 0
+
+    int stage_sum = 0;
     s2[0 ] = classifier25(II, stddev);
     s2[1 ] = classifier26(II, stddev);
     s2[2 ] = classifier27(II, stddev);
@@ -2881,7 +2836,6 @@ int cascade_classifier(point_t pt, int_II II[WINDOW_SIZE][WINDOW_SIZE], int_SII 
     s2[24] = classifier49(II, stddev);
     s2[25] = classifier50(II, stddev);
     s2[26] = classifier51(II, stddev);
-
     stage_sum =  s2[0 ] + s2[1 ] + s2[2 ] + s2[3 ] + s2[4 ] + s2[5 ] + s2[6 ] + s2[7 ];
     stage_sum += s2[8 ] + s2[9 ] + s2[10] + s2[11] + s2[12] + s2[13] + s2[14] + s2[15];
     stage_sum += s2[16] + s2[17] + s2[18] + s2[19] + s2[20] + s2[21] + s2[22] + s2[23];
@@ -2889,12 +2843,70 @@ int cascade_classifier(point_t pt, int_II II[WINDOW_SIZE][WINDOW_SIZE], int_SII 
 
     if (stage_sum < 0.4 * stages_thresh_array[2])
         return -1;
+    return 0;
+}
 
-    haar_counter += 27;
+int cascade_classifier(point_t pt, int_II II[WINDOW_SIZE][WINDOW_SIZE], int_SII SII[SQ_SIZE][SQ_SIZE]) {
+#pragma HLS inline
+
+    int mean;
+    int stddev = 0;
+    int haar_counter = 0;
+    int w_index = 0;
+    int r_index = 0;
+    int stage_sum = 0;
+
+    static uint18_t coord[12];
+#pragma HLS array_partition variable = coord complete dim = 0
+
+    /* Banking */
+    /* 12 (x,y,w,h) values corresponding to 3 rectangles that need to be read */
+    uint18_t values[12];
+#pragma HLS array_partition variable = values complete dim = 0
+    /* location/address of those 12 values in the 25 X 25 window */
+    uint10_t addr_list[12];
+#pragma HLS array_partition variable = addr_list complete dim = 0
+    /* among the 12 values which of them are needed to be read from the 25 X 25 window */
+    bit enable_list[12] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
+#pragma HLS array_partition variable = enable_list complete dim = 0
+    uint18_t _II[WINDOW_SIZE * WINDOW_SIZE];
+#pragma HLS array_partition variable = _II complete dim = 0
+
+    COPY_LOOP1:for (int i = 0; i < WINDOW_SIZE; i++) {
+#pragma HLS unroll
+        COPY_LOOP2:for (int j = 0; j < WINDOW_SIZE; j++) {
+#pragma HLS unroll
+            _II[i * 25 + j] = II[i][j];
+        }
+    }
+
+    mean = II[0][0] - II[0][WINDOW_SIZE - 1] - II[WINDOW_SIZE - 1][0] + II[WINDOW_SIZE - 1][WINDOW_SIZE - 1];
+    stddev = SII[0][0] - SII[0][SQ_SIZE - 1] - SII[SQ_SIZE - 1][0] + SII[SQ_SIZE - 1][SQ_SIZE - 1];
+    stddev = (stddev * (WINDOW_SIZE - 1) * (WINDOW_SIZE - 1));
+    stddev = stddev - mean * mean;
+
+    if (stddev > 0)
+        stddev = my_sqrt(stddev);
+    else
+        stddev = 1;
+
+    if (strong_classifier0(II, stddev) == -1)
+        return -1;
+    if (strong_classifier1(II, stddev) == -1)
+        return -1;
+    if (strong_classifier2(II, stddev) == -1)
+        return -1;
+
+    haar_counter += 52;
 
     /******************************************/
     // REST 23 STAGES
     /*****************************************/
+
+    rect_t tr0, tr1, tr2;
+    int r_id;
+    int w_id;
+    int s;
 
     Stages:for (int i = 3; i < 25; i++) {
         Filters:for (int j = 0; j < stages_array[i]; j++) {
