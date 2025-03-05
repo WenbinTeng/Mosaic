@@ -1,19 +1,30 @@
 #ifndef __TOP_H__
 #define __TOP_H__
 
-#include "lenet.hpp"
+#include <hls_stream.h>
+#include <hls_task.h>
 
-int lenet_kernel_0(volatile DTYPE input[32][32],
-                   volatile DTYPE c1_weights[6][5][5],
-                   volatile DTYPE c1_bias[6],
-                   volatile DTYPE c3_weights[16][6][5][5],
-                   volatile DTYPE c3_bias[16],
-                   volatile DTYPE c5_weights[120][16][5][5],
-                   volatile DTYPE c5_bias[120],
-                   volatile DTYPE f6_weights[84][120],
-                   volatile DTYPE f6_bias[84],
-                   volatile DTYPE output_weights[10][84],
-                   volatile DTYPE output_bias[10],
-                   volatile DTYPE output[10]);
+#include "conv1.hpp"
+#include "samp2.hpp"
+#include "conv3.hpp"
+#include "samp4.hpp"
+#include "conv5.hpp"
+#include "full6.hpp"
+#include "out.hpp"
+
+void top(
+    hls::stream<float>& in_stream,
+    hls::stream<float>& conv1_weight_stream,
+    hls::stream<float>& conv1_bias_stream,
+    hls::stream<float>& conv3_weight_stream,
+    hls::stream<float>& conv3_bias_stream,
+    hls::stream<float>& conv5_weight_stream,
+    hls::stream<float>& conv5_bias_stream,
+    hls::stream<float>& full6_weight_stream,
+    hls::stream<float>& full6_bias_stream,
+    hls::stream<float>& out_weight_stream,
+    hls::stream<float>& out_bias_stream,
+    hls::stream<float>& out_stream
+);
 
 #endif
