@@ -1,4 +1,4 @@
-#include "layer1_conv.hpp"
+#include "conv1.hpp"
 
 /**
  *  IN:     32*32
@@ -6,7 +6,7 @@
  *  BIAS:   6
  *  OUT:    6*28*28
  */
-void layer1_conv(
+void conv1(
     hls::stream<DTYPE>& in_stream,
     hls::stream<DTYPE>& weight_stream,
     hls::stream<DTYPE>& bias_stream,

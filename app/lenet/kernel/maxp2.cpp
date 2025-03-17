@@ -1,10 +1,10 @@
-#include "layer2_maxp.hpp"
+#include "maxp2.hpp"
 
 /**
  *  IN:     16*10*10
  *  OUT:    16*5*5
  */
-void layer2_maxp(
+void maxp2(
     hls::stream<DTYPE>& in_stream,
     hls::stream<DTYPE>& out_stream
 ) {

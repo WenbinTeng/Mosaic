@@ -1,11 +1,11 @@
-#ifndef __LAYER2_CONV_H__
-#define __LAYER2_CONV_H__
+#ifndef __FULL4_H__
+#define __FULL4_H__
 
 #include "config.h"
 
 #include "hls_stream.h"
 
-void layer2_conv(
+void full4(
     hls::stream<DTYPE>& in_stream,
     hls::stream<DTYPE>& weight_stream,
     hls::stream<DTYPE>& bias_stream,

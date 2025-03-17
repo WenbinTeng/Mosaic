@@ -1,4 +1,4 @@
-#include "layer2_conv.hpp"
+#include "conv2.hpp"
 
 /**
  *  IN:     6*14*14
@@ -6,7 +6,7 @@
  *  BIAS:   16
  *  OUT:    16*10*10
  */
-void layer2_conv(
+void conv2(
     hls::stream<DTYPE>& in_stream,
     hls::stream<DTYPE>& weight_stream,
     hls::stream<DTYPE>& bias_stream,

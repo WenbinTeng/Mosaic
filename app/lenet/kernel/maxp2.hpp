@@ -1,11 +1,11 @@
-#ifndef __LAYER2_MAXP_H__
-#define __LAYER2_MAXP_H__
+#ifndef __MAXP2_H__
+#define __MAXP2_H__
 
 #include "config.h"
 
 #include "hls_stream.h"
 
-void layer2_maxp(
+void maxp2(
     hls::stream<DTYPE>& in_stream,
     hls::stream<DTYPE>& out_stream
 );

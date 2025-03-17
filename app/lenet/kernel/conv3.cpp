@@ -1,4 +1,4 @@
-#include "layer3_conv.hpp"
+#include "conv3.hpp"
 
 /**
  *  IN:     16*5*5
@@ -6,7 +6,7 @@
  *  BIAS:   120
  *  OUT:    120
  */
-void layer3_conv(
+void conv3(
     hls::stream<DTYPE>& in_stream,
     hls::stream<DTYPE>& weight_stream,
     hls::stream<DTYPE>& bias_stream,

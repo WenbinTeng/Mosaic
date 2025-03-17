@@ -1,11 +1,11 @@
-#ifndef __LAYER5_FC_H__
-#define __LAYER5_FC_H__
+#ifndef __FULL5_H__
+#define __FULL5_H__
 
 #include "config.h"
 
 #include "hls_stream.h"
 
-void layer5_fc(
+void full5(
     hls::stream<DTYPE>& in_stream,
     hls::stream<DTYPE>& weight_stream,
     hls::stream<DTYPE>& bias_stream,

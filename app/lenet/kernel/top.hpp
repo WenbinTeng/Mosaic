@@ -6,13 +6,13 @@
 #include "hls_stream.h"
 #include "hls_task.h"
 
-#include "layer1_conv.hpp"
-#include "layer1_maxp.hpp"
-#include "layer2_conv.hpp"
-#include "layer2_maxp.hpp"
-#include "layer3_conv.hpp"
-#include "layer4_fc.hpp"
-#include "layer5_fc.hpp"
+#include "conv1.hpp"
+#include "maxp1.hpp"
+#include "conv2.hpp"
+#include "maxp2.hpp"
+#include "conv3.hpp"
+#include "full4.hpp"
+#include "full5.hpp"
 
 void top(
     DTYPE input[32][32],
@@ -22,10 +22,10 @@ void top(
     DTYPE layer2_conv_bias[16],
     DTYPE layer3_conv_weight[120][16][5][5],
     DTYPE layer3_conv_bias[120],
-    DTYPE layer4_fc_weight[84][120],
-    DTYPE layer4_fc_bias[84],
-    DTYPE layer5_fc_weight[10][84],
-    DTYPE layer5_fc_bias[10],
+    DTYPE layer4_full_weight[84][120],
+    DTYPE layer4_full_bias[84],
+    DTYPE layer5_full_weight[10][84],
+    DTYPE layer5_full_bias[10],
     DTYPE output[10]
 );
 
