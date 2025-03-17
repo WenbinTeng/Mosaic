@@ -24,9 +24,9 @@ int main(int argc, char const* argv[]) {
     
     top(input, conv1_weight, conv1_bias, conv3_weight, conv3_bias, conv5_weight, conv5_bias, full6_weight, full6_bias, out_weight, out_bias, output);
 
-    xprintf("type\tprob");
+    xprintf("type\tprob\n");
     for (int n = 0; n < 10; n++) {
-        xprintf("%d\t%d", n, output[n]);
+        xprintf("%d\t%d\n", n, output[n]);
     }
 
     return 0;
