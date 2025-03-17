@@ -95,43 +95,43 @@ void top(
 ) {
 
     hls_thread_local hls::stream<DTYPE> in_stream("in_stream");
-    hls_thread_local hls::stream<DTYPE> conv1_weight_stream("conv1_weight_stream");
-    hls_thread_local hls::stream<DTYPE> conv1_bias_stream("conv1_bias_stream");
-    hls_thread_local hls::stream<DTYPE> conv3_weight_stream("conv3_weight_stream");
-    hls_thread_local hls::stream<DTYPE> conv3_bias_stream("conv3_bias_stream");
-    hls_thread_local hls::stream<DTYPE> conv5_weight_stream("conv5_weight_stream");
-    hls_thread_local hls::stream<DTYPE> conv5_bias_stream("conv5_bias_stream");
-    hls_thread_local hls::stream<DTYPE> full6_weight_stream("full6_weight_stream");
-    hls_thread_local hls::stream<DTYPE> full6_bias_stream("full6_bias_stream");
-    hls_thread_local hls::stream<DTYPE> out_weight_stream("out_weight_stream");
-    hls_thread_local hls::stream<DTYPE> out_bias_stream("out_bias_stream");
+    hls_thread_local hls::stream<DTYPE> layer1_conv_weight_stream("layer1_conv_weight_stream");
+    hls_thread_local hls::stream<DTYPE> layer1_conv_bias_stream("layer1_conv_bias_stream");
+    hls_thread_local hls::stream<DTYPE> layer3_conv_weight_stream("layer3_conv_weight_stream");
+    hls_thread_local hls::stream<DTYPE> layer3_conv_bias_stream("layer3_conv_bias_stream");
+    hls_thread_local hls::stream<DTYPE> layer5_conv_weight_stream("layer5_conv_weight_stream");
+    hls_thread_local hls::stream<DTYPE> layer5_conv_bias_stream("layer5_conv_bias_stream");
+    hls_thread_local hls::stream<DTYPE> layer6_fc_weight_stream("layer6_fc_weight_stream");
+    hls_thread_local hls::stream<DTYPE> layer6_fc_bias_stream("layer6_fc_bias_stream");
+    hls_thread_local hls::stream<DTYPE> layer7_out_weight_stream("layer7_out_weight_stream");
+    hls_thread_local hls::stream<DTYPE> layer7_out_bias_stream("layer7_out_bias_stream");
     hls_thread_local hls::stream<DTYPE> out_stream("out_stream");
 
-    hls_thread_local hls::stream<DTYPE> conv1_output_stream("conv1_output_stream");
-    hls_thread_local hls::stream<DTYPE> samp2_output_stream("samp2_output_stream");
-    hls_thread_local hls::stream<DTYPE> conv3_output_stream("conv3_output_stream");
-    hls_thread_local hls::stream<DTYPE> samp4_output_stream("samp4_output_stream");
-    hls_thread_local hls::stream<DTYPE> conv5_output_stream("conv5_output_stream");
-    hls_thread_local hls::stream<DTYPE> full6_output_stream("full6_output_stream");
+    hls_thread_local hls::stream<DTYPE> layer1_conv_output_stream("layer1_conv_output_stream");
+    hls_thread_local hls::stream<DTYPE> layer2_maxp_output_stream("layer2_maxp_output_stream");
+    hls_thread_local hls::stream<DTYPE> layer3_conv_output_stream("layer3_conv_output_stream");
+    hls_thread_local hls::stream<DTYPE> layer4_maxp_output_stream("layer4_maxp_output_stream");
+    hls_thread_local hls::stream<DTYPE> layer5_conv_output_stream("layer5_conv_output_stream");
+    hls_thread_local hls::stream<DTYPE> layer6_fc_output_stream("layer6_fc_output_stream");
 
     hls_thread_local hls::task t1(read_input_data, input, in_stream);
 
-    hls_thread_local hls::task t2(read_conv1_data, conv1_weight, conv1_bias, conv1_weight_stream, conv1_bias_stream);
-    hls_thread_local hls::task t3(layer1_conv, in_stream, conv1_weight_stream, conv1_bias_stream, conv1_output_stream);
-    hls_thread_local hls::task t4(layer2_maxp, conv1_output_stream, samp2_output_stream);
+    hls_thread_local hls::task t2(read_conv1_data, conv1_weight, conv1_bias, layer1_conv_weight_stream, layer1_conv_bias_stream);
+    hls_thread_local hls::task t3(layer1_conv, in_stream, layer1_conv_weight_stream, layer1_conv_bias_stream, layer1_conv_output_stream);
+    hls_thread_local hls::task t4(layer2_maxp, layer1_conv_output_stream, layer2_maxp_output_stream);
 
-    hls_thread_local hls::task t5(read_conv3_data, conv3_weight, conv3_bias, conv3_weight_stream, conv3_bias_stream);
-    hls_thread_local hls::task t6(layer3_conv, samp2_output_stream, conv3_weight_stream, conv3_bias_stream, conv3_output_stream);
-    hls_thread_local hls::task t7(layer4_maxp, conv3_output_stream, samp4_output_stream);
+    hls_thread_local hls::task t5(read_conv3_data, conv3_weight, conv3_bias, layer3_conv_weight_stream, layer3_conv_bias_stream);
+    hls_thread_local hls::task t6(layer3_conv, layer2_maxp_output_stream, layer3_conv_weight_stream, layer3_conv_bias_stream, layer3_conv_output_stream);
+    hls_thread_local hls::task t7(layer4_maxp, layer3_conv_output_stream, layer4_maxp_output_stream);
 
-    hls_thread_local hls::task t8(read_conv5_data, conv5_weight, conv5_bias, conv5_weight_stream, conv5_bias_stream);
-    hls_thread_local hls::task t9(layer5_conv, samp4_output_stream, conv5_weight_stream, conv5_bias_stream, conv5_output_stream);
+    hls_thread_local hls::task t8(read_conv5_data, conv5_weight, conv5_bias, layer5_conv_weight_stream, layer5_conv_bias_stream);
+    hls_thread_local hls::task t9(layer5_conv, layer4_maxp_output_stream, layer5_conv_weight_stream, layer5_conv_bias_stream, layer5_conv_output_stream);
 
-    hls_thread_local hls::task t10(read_full6_data, full6_weight, full6_bias, full6_weight_stream, full6_bias_stream);
-    hls_thread_local hls::task t11(layer6_fc, conv5_output_stream, full6_weight_stream, full6_bias_stream, full6_output_stream);
+    hls_thread_local hls::task t10(read_full6_data, full6_weight, full6_bias, layer6_fc_weight_stream, layer6_fc_bias_stream);
+    hls_thread_local hls::task t11(layer6_fc, layer5_conv_output_stream, layer6_fc_weight_stream, layer6_fc_bias_stream, layer6_fc_output_stream);
 
-    hls_thread_local hls::task t12(read_out_data, out_weight, out_bias, out_weight_stream, out_bias_stream);
-    hls_thread_local hls::task t13(layer7_out, full6_output_stream, out_weight_stream, out_bias_stream, out_stream);
+    hls_thread_local hls::task t12(read_out_data, out_weight, out_bias, layer7_out_weight_stream, layer7_out_bias_stream);
+    hls_thread_local hls::task t13(layer7_out, layer6_fc_output_stream, layer7_out_weight_stream, layer7_out_bias_stream, out_stream);
 
     hls_thread_local hls::task t14(write_output_data, output, out_stream);
 }
