@@ -1,4 +1,4 @@
-#include "conv1.hpp"
+#include "layer1_conv.hpp"
 
 /**
  *  IN:     32*32
@@ -6,15 +6,15 @@
  *  BIAS:   6
  *  OUT:    6*28*28
  */
-void conv1(
-    hls::stream<float>& in_stream,
-    hls::stream<float>& weight_stream,
-    hls::stream<float>& bias_stream,
-    hls::stream<float>& out_stream
+void layer1_conv(
+    hls::stream<DTYPE>& in_stream,
+    hls::stream<DTYPE>& weight_stream,
+    hls::stream<DTYPE>& bias_stream,
+    hls::stream<DTYPE>& out_stream
 ) {
-    float in_buff[32][32];
-    float weight_buff[5][5];
-    float bias_buff;
+    DTYPE in_buff[32][32];
+    DTYPE weight_buff[5][5];
+    DTYPE bias_buff;
 
     for (int i = 0; i < 32; i++) {
         for (int j = 0; j < 32; j++) {
@@ -22,7 +22,7 @@ void conv1(
         }
     }
 
-    float sum, tmp;
+    DTYPE sum, tmp;
 
     for (int co = 0; co < 6; co++) {
         for (int i = 0; i < 5; i++) {

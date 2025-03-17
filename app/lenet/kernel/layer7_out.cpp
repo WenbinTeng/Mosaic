@@ -1,4 +1,4 @@
-#include "out.hpp"
+#include "layer7_out.hpp"
 
 /**
  *  IN:     84
@@ -6,19 +6,19 @@
  *  BIAS:   10
  *  OUT:    10
  */
-void out(
-    hls::stream<float>& in_stream,
-    hls::stream<float>& weight_stream,
-    hls::stream<float>& bias_stream,
-    hls::stream<float>& out_stream
+void layer7_out(
+    hls::stream<DTYPE>& in_stream,
+    hls::stream<DTYPE>& weight_stream,
+    hls::stream<DTYPE>& bias_stream,
+    hls::stream<DTYPE>& out_stream
 ) {
-    float in_buff[84];
+    DTYPE in_buff[84];
     
     for (int c = 0; c < 84; c++) {
         in_buff[c] = in_stream.read();
     }
 
-    float sum, tmp;
+    DTYPE sum, tmp;
 
     for (int n = 0; n < 10; n++) {
         sum = 0;

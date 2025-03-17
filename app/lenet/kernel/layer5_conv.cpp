@@ -1,4 +1,4 @@
-#include "conv5.hpp"
+#include "layer5_conv.hpp"
 
 /**
  *  IN:     16*5*5
@@ -6,15 +6,15 @@
  *  BIAS:   120
  *  OUT:    120
  */
-void conv5(
-    hls::stream<float>& in_stream,
-    hls::stream<float>& weight_stream,
-    hls::stream<float>& bias_stream,
-    hls::stream<float>& out_stream
+void layer5_conv(
+    hls::stream<DTYPE>& in_stream,
+    hls::stream<DTYPE>& weight_stream,
+    hls::stream<DTYPE>& bias_stream,
+    hls::stream<DTYPE>& out_stream
 ) {
-    float in_buff[16][5][5];
-    float weight_buff[16][5][5];
-    float bias_buff;
+    DTYPE in_buff[16][5][5];
+    DTYPE weight_buff[16][5][5];
+    DTYPE bias_buff;
 
     for (int ci = 0; ci < 16; ci++) {
         for (int i = 0; i < 5; i++) {
@@ -24,7 +24,7 @@ void conv5(
         }
     }
 
-    float sum, tmp;
+    DTYPE sum, tmp;
 
     for (int co = 0; co < 120; co++) {
         for (int ci = 0; ci < 16; ci++) {

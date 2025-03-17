@@ -1,15 +1,15 @@
-#include "samp4.hpp"
+#include "layer4_maxp.hpp"
 
 /**
  *  IN:     16*10*10
  *  OUT:    16*5*5
  */
-void samp4(
-    hls::stream<float>& in_stream,
-    hls::stream<float>& out_stream
+void layer4_maxp(
+    hls::stream<DTYPE>& in_stream,
+    hls::stream<DTYPE>& out_stream
 ) {
-    float in_buff[10][10];
-    float data;
+    DTYPE in_buff[10][10];
+    DTYPE data;
     bool cond;
 
     for (int c = 0; c < 16; c++) {
@@ -21,7 +21,7 @@ void samp4(
 
         for (int h = 0; h < 5; h++) {
             for (int w = 0; w < 5; w++) {
-                float max_value = -1000000000000.0;
+                DTYPE max_value = -1000000000000.0;
                 for (int i = 0; i < 2; i++) {
                     for (int j = 0; j < 2; j++) {
 #pragma HLS PIPELINE

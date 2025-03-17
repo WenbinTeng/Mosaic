@@ -1,15 +1,15 @@
-#include "samp2.hpp"
+#include "layer2_maxp.hpp"
 
 /**
  *  IN:     6*28*28
  *  OUT:    6*14*14
  */
-void samp2(
-    hls::stream<float>& in_stream,
-    hls::stream<float>& out_stream
+void layer2_maxp(
+    hls::stream<DTYPE>& in_stream,
+    hls::stream<DTYPE>& out_stream
 ) {
-    float in_buff[28][28];
-    float data;
+    DTYPE in_buff[28][28];
+    DTYPE data;
     bool cond;
 
     for (int c = 0; c < 6; c++) {
@@ -21,7 +21,7 @@ void samp2(
 
         for (int h = 0; h < 14; h++) {
             for (int w = 0; w < 14; w++) {
-                float max_value = -10000000.0;
+                DTYPE max_value = -10000000.0;
                 for (int i = 0; i < 2; i++) {
                     for (int j = 0; j < 2; j++) {
 #pragma HLS PIPELINE

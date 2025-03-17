@@ -1,30 +1,32 @@
 #ifndef __TOP_H__
 #define __TOP_H__
 
-#include <hls_stream.h>
-#include <hls_task.h>
+#include "config.hpp"
 
-#include "conv1.hpp"
-#include "samp2.hpp"
-#include "conv3.hpp"
-#include "samp4.hpp"
-#include "conv5.hpp"
-#include "full6.hpp"
-#include "out.hpp"
+#include "hls_stream.h"
+#include "hls_task.h"
+
+#include "layer1_conv.hpp"
+#include "layer2_maxp.hpp"
+#include "layer3_conv.hpp"
+#include "layer4_maxp.hpp"
+#include "layer5_conv.hpp"
+#include "layer6_fc.hpp"
+#include "layer7_out.hpp"
 
 void top(
-    hls::stream<float>& in_stream,
-    hls::stream<float>& conv1_weight_stream,
-    hls::stream<float>& conv1_bias_stream,
-    hls::stream<float>& conv3_weight_stream,
-    hls::stream<float>& conv3_bias_stream,
-    hls::stream<float>& conv5_weight_stream,
-    hls::stream<float>& conv5_bias_stream,
-    hls::stream<float>& full6_weight_stream,
-    hls::stream<float>& full6_bias_stream,
-    hls::stream<float>& out_weight_stream,
-    hls::stream<float>& out_bias_stream,
-    hls::stream<float>& out_stream
+    DTYPE input[32][32],
+    DTYPE conv1_weight[6][5][5],
+    DTYPE conv1_bias[6],
+    DTYPE conv3_weight[16][6][5][5],
+    DTYPE conv3_bias[16],
+    DTYPE conv5_weight[120][16][5][5],
+    DTYPE conv5_bias[120],
+    DTYPE full6_weight[84][120],
+    DTYPE full6_bias[84],
+    DTYPE out_weight[10][84],
+    DTYPE out_bias[10],
+    DTYPE output[10]
 );
 
 #endif
