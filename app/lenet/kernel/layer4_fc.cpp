@@ -1,4 +1,4 @@
-#include "layer6_fc.hpp"
+#include "layer4_fc.hpp"
 
 /**
  *  IN:     120
@@ -6,7 +6,7 @@
  *  BIAS:   84
  *  OUT:    84
  */
-void layer6_fc(
+void layer4_fc(
     hls::stream<DTYPE>& in_stream,
     hls::stream<DTYPE>& weight_stream,
     hls::stream<DTYPE>& bias_stream,

@@ -1,7 +1,7 @@
 #ifndef __LAYER3_CONV_H__
 #define __LAYER3_CONV_H__
 
-#include "config.hpp"
+#include "config.h"
 
 #include "hls_stream.h"
 

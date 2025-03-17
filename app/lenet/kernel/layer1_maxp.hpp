@@ -1,11 +1,11 @@
-#ifndef __LAYER4_MAXP_H__
-#define __LAYER4_MAXP_H__
+#ifndef __LAYER1_MAXP_H__
+#define __LAYER1_MAXP_H__
 
-#include "config.hpp"
+#include "config.h"
 
 #include "hls_stream.h"
 
-void layer4_maxp(
+void layer1_maxp(
     hls::stream<DTYPE>& in_stream,
     hls::stream<DTYPE>& out_stream
 );

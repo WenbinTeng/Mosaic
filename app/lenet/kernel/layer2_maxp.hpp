@@ -1,7 +1,7 @@
 #ifndef __LAYER2_MAXP_H__
 #define __LAYER2_MAXP_H__
 
-#include "config.hpp"
+#include "config.h"
 
 #include "hls_stream.h"
 

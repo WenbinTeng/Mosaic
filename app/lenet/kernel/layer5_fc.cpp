@@ -1,4 +1,4 @@
-#include "layer7_out.hpp"
+#include "layer5_fc.hpp"
 
 /**
  *  IN:     84
@@ -6,7 +6,7 @@
  *  BIAS:   10
  *  OUT:    10
  */
-void layer7_out(
+void layer5_fc(
     hls::stream<DTYPE>& in_stream,
     hls::stream<DTYPE>& weight_stream,
     hls::stream<DTYPE>& bias_stream,

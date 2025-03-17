@@ -1,11 +1,11 @@
-#ifndef __LAYER5_CONV_H__
-#define __LAYER5_CONV_H__
+#ifndef __LAYER5_FC_H__
+#define __LAYER5_FC_H__
 
-#include "config.hpp"
+#include "config.h"
 
 #include "hls_stream.h"
 
-void layer5_conv(
+void layer5_fc(
     hls::stream<DTYPE>& in_stream,
     hls::stream<DTYPE>& weight_stream,
     hls::stream<DTYPE>& bias_stream,
