@@ -6,10 +6,10 @@
 #include "hls_stream.h"
 
 void conv1(
-    hls::stream<DTYPE>& in_stream,
-    hls::stream<DTYPE>& weight_stream,
-    hls::stream<DTYPE>& bias_stream,
-    hls::stream<DTYPE>& out_stream
+    hls::stream<feature_t>& in_stream,
+    hls::stream<feature_t>& out_stream,
+    const weight_t          weight[OUT_CH][K][K],
+    const acc_t             bias[OUT_CH]
 );
 
 #endif

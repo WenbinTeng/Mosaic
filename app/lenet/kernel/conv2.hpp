@@ -8,8 +8,8 @@
 void conv2(
     hls::stream<DTYPE>& in_stream,
     hls::stream<DTYPE>& weight_stream,
-    hls::stream<DTYPE>& bias_stream,
-    hls::stream<DTYPE>& out_stream
+    const DTYPE         weight[OUT_CH][IN_CH][K][K],
+    const DTYPE         bias[OUT_CH]
 );
 
 #endif
