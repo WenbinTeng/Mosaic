@@ -8,27 +8,26 @@
  *  STRIDE: 1
  */
 
-constexpr int IN_CH     = 1;                // input channel
-constexpr int OUT_CH    = 6;                // output channel
-constexpr int IMG_H     = 32;               // input height
-constexpr int IMG_W     = 32;               // input width
-constexpr int K         = 5;                // kernel size
-constexpr int OUT_H     = IMG_H - K + 1;    // 28, output height
-constexpr int OUT_W     = IMG_W - K + 1;    // 28, output width
-
 void conv1(
-    hls::stream<feature_t>& in_stream,
-    hls::stream<feature_t>& out_stream,
-    const weight_t          weight[OUT_CH][K][K],
-    const acc_t             bias[OUT_CH]
+    hls::stream<din_t>& in_stream,
+    hls::stream<dout_t>& out_stream
 ) {
+#pragma HLS INTERFACE ap_ctrl_none port=return
 #pragma HLS INTERFACE axis port=in_stream
 #pragma HLS INTERFACE axis port=out_stream
-#pragma HLS INTERFACE bram port=weight
-#pragma HLS INTERFACE bram port=bias
+
+    /*** Weight ROM ***/
+    weight_t weight[OUT_CH][K][K];
+#pragma HLS BIND_STORAGE variable=weight type=rom_1p impl=bram
+    _init_weight(weight);
+
+    /*** Bias ROM ***/
+    acc_t bias[OUT_CH];
+#pragma HLS BIND_STORAGE variable=bias type=rom_1p impl=bram
+    _init_bias(bias);
 
     /*** Line buffer ***/
-    feature_t line_buff[K][IMG_W];
+    feature_t line_buff[K][IN_W + K - 1];
 #pragma HLS ARRAY_PARTITION variable=line_buff complete dim=1
 
     /*** Window buffer ***/
@@ -36,23 +35,30 @@ void conv1(
 #pragma HLS ARRAY_PARTITION variable=window_buff complete dim=0
 
     /*** Main loop ***/
-    for (int row = 0; row < IMG_H + K - 1; row++) {
-        for (int col = 0; col < IMG_W + K - 1; col++) {
+    for (int row = 0; row < IN_H + K - 1; row++) {
+        for (int col = 0; col < IN_W + K - 1; col++) {
 #pragma HLS PIPELINE
 
             /*** 1. Update line buffer. ***/
             feature_t pix_in = 0;
-            if (row < IMG_H && col < IMG_W) {
-                pix_in = in_stream.read();
+            if (row < IN_H && col < IN_W) {
+                din_t din = in_stream.read();
+                _unpack_input(din, pix_in);
             }
+            for (int i = 0; i < K - 1; i++) {
+#pragma HLS UNROLL
+                line_buff[i][col] = line_buff[i + 1][col];  
+            }
+            line_buff[K - 1][col] = pix_in;
 
             /*** 2. Shift lines in window buffer. ***/
             for (int i = 0; i < K; i++) {
 #pragma HLS UNROLL
-                if (i == K - 1)
-                    line_buff[i][col] = pix_in;
-                else
-                    line_buff[i][col] = line_buff[i + 1][col];
+                for (int j = 0; j < K - 1; j++) {
+#pragma HLS UNROLL
+                    window_buff[i][j] = window_buff[i][j + 1];
+                }
+                window_buff[i][K - 1] = line_buff[i][col];
             }
 
             /*** 3. Compute partial sums. ***/
@@ -64,6 +70,7 @@ void conv1(
 
                 /* (b). Compute sums for all output channels. */
                 for (int oc = 0; oc < OUT_CH; oc++) {
+#pragma HLS UNROLL
                     acc_t sum = bias[oc];
                     for (int i = 0; i < K; i++) {
 #pragma HLS UNROLL
@@ -72,14 +79,13 @@ void conv1(
                             sum += window_buff[i][j] * weight[oc][i][j];
                         }
                     }
-                    psum[oc] = sum;
+                    psum[oc] = relu(sum);
                 }
 
                 /* (c). Write outputs. */
-                for (int oc = 0; oc < OUT_CH; oc++) {
-#pragma HLS UNROLL
-                    out_stream.write((feature_t)relu(psum[oc]));
-                }
+                dout_t dout;
+                _pack_output(psum, dout);
+                out_stream.write(dout);
             }
         }
     }

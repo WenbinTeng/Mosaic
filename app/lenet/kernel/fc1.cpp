@@ -7,27 +7,26 @@
  *  OUT:    120
  */
 
-constexpr int IN_SIZE   = 16 * 5 * 5;   // 400, input size
-constexpr int OUT_SIZE  = 120;          // output size
-constexpr int PAR       = 10;           // parallel factor
-
 void fc1(
     hls::stream<feature_t>& in_stream,
-    hls::stream<feature_t>& out_stream,
-    const weight_t          weight[OUT_SIZE][IN_SIZE],
-    const acc_t             bias[OUT_SIZE]
+    hls::stream<feature_t>& out_stream
 ) {
 #pragma HLS INTERFACE axis port=in_stream
 #pragma HLS INTERFACE axis port=out_stream
-#pragma HLS INTERFACE bram port=weight
-#pragma HLS INTERFACE bram port=bias
-#pragma HLS ARRAY_PARTITION variable=weight complete dim=1
+
+    /*** Weight ROM ***/
+    weight_t weight[OUT_SIZE][IN_SIZE] = { {1,2,3} };
+#pragma HLS BIND_STORAGE variable=weight type=ROM_NP impl=bram
+
+    /*** Bias ROM ***/
+    acc_t bias[OUT_SIZE] = {};
+#pragma HLS BIND_STORAGE variable=bias type=ROM_1P impl=bram
 
     /*** Input buffer ***/
     feature_t in_buff[IN_SIZE];
 #pragma HLS ARRAY_PARTITION variable=in_buff cyclic factor=16
     for (int i = 0; i < IN_SIZE; i++) {
-#pragma HLS PIPELINE II=1
+#pragma HLS PIPELINE
         in_buff[i] = in_stream.read();
     }
 

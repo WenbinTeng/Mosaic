@@ -9,7 +9,7 @@ using acc_t     = ap_int<16>;
 
 inline acc_t relu(acc_t x) {
 #pragma HLS INLINE
-    return (x > 0) ? x : 0;
+    return (x > (acc_t)0) ? x : (acc_t)0;
 }
 
 #endif
