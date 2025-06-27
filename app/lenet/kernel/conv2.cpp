@@ -28,7 +28,8 @@ void conv2(
 
     /*** Line buffer ***/
     feature_t line_buff[IN_CH][K][IN_W + K - 1];
-#pragma HLS ARRAY_PARTITION variable=line_buff complete dim=0
+#pragma HLS ARRAY_PARTITION variable=line_buff complete dim=1
+#pragma HLS ARRAY_PARTITION variable=line_buff complete dim=2
 
     /*** Window buffer ***/
     feature_t window_buff[IN_CH][K][K];
