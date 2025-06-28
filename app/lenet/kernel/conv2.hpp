@@ -14,10 +14,10 @@ constexpr int K         = 5;            // kernel size
 constexpr int OUT_CH    = 16;           // output channel
 constexpr int OUT_H     = IN_H - K + 1; // 10, output height
 constexpr int OUT_W     = IN_W - K + 1; // 10, output width
-constexpr int PAR       = 8;            // parallel factor
+constexpr int PAR       = 16;            // parallel factor
 
-using din_t = ap_int<48>;
-using dout_t = ap_int<64>;
+using din_t = ap_int<IN_CH*8>;
+using dout_t = ap_int<PAR*8>;
 
 void conv2(
     hls::stream<din_t>& in_stream,

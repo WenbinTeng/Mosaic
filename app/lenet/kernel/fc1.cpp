@@ -8,26 +8,29 @@
  */
 
 void fc1(
-    hls::stream<feature_t>& in_stream,
-    hls::stream<feature_t>& out_stream
+    hls::stream<din_t>& in_stream,
+    hls::stream<dout_t>& out_stream
 ) {
+#pragma HLS INTERFACE ap_ctrl_none port=return
 #pragma HLS INTERFACE axis port=in_stream
 #pragma HLS INTERFACE axis port=out_stream
+#pragma HLS DATAFLOW
 
     /*** Weight ROM ***/
-    weight_t weight[OUT_SIZE][IN_SIZE] = { {1,2,3} };
-#pragma HLS BIND_STORAGE variable=weight type=ROM_NP impl=bram
+    weight_t weight[OUT_SIZE][IN_SIZE];
+#pragma HLS BIND_STORAGE variable=weight type=ROM_1P impl=bram
 
     /*** Bias ROM ***/
-    acc_t bias[OUT_SIZE] = {};
+    acc_t bias[OUT_SIZE];
 #pragma HLS BIND_STORAGE variable=bias type=ROM_1P impl=bram
 
     /*** Input buffer ***/
     feature_t in_buff[IN_SIZE];
 #pragma HLS ARRAY_PARTITION variable=in_buff cyclic factor=16
-    for (int i = 0; i < IN_SIZE; i++) {
+    for (int i = 0; i < 5 * 5; i++) {
 #pragma HLS PIPELINE
-        in_buff[i] = in_stream.read();
+        din_t din = in_stream.read();
+        _unpack_input(din, &in_buff[i * 16]);
     }
 
     /*** Main loop ***/
@@ -56,7 +59,10 @@ void fc1(
         /* (c). Write outputs. */
         for (int p = 0; p < PAR; p++) {
 #pragma HLS UNROLL
-            out_stream.write((feature_t)relu(psum[p]));
+            psum[p] = relu(psum[p]);
         }
+        dout_t dout;
+        _pack_output(psum, dout);
+        out_stream.write(dout);
     }
 }
