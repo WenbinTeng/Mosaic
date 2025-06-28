@@ -12,8 +12,8 @@ constexpr int K         = 2;        // kernel size
 constexpr int OUT_H     = IN_H / K; // 14, output height
 constexpr int OUT_W     = IN_W / K; // 14, output width
 
-using din_t = ap_int<CH*8>;
-using dout_t = ap_int<CH*8>;
+using din_t = ap_int<CH * 8>;
+using dout_t = ap_int<CH * 8>;
 
 void pool1(
     hls::stream<din_t>& in_stream,

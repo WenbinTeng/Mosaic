@@ -16,8 +16,8 @@ constexpr int OUT_H     = IN_H - K + 1; // 10, output height
 constexpr int OUT_W     = IN_W - K + 1; // 10, output width
 constexpr int PAR       = 16;            // parallel factor
 
-using din_t = ap_int<IN_CH*8>;
-using dout_t = ap_int<PAR*8>;
+using din_t = ap_int<IN_CH * 8>;
+using dout_t = ap_int<PAR * 8>;
 
 void conv2(
     hls::stream<din_t>& in_stream,
@@ -38,7 +38,7 @@ inline void _init_weight(weight_t weight[OUT_CH][IN_CH][K][K]) {
         for (int ic = 0; ic < IN_CH; ic++) {
             for (int i = 0; i < K; i++) {
                 for (int j = 0; j < K; j++) {
-                    weight[oc][ic][i][j] = 256 * std::sin(oc*ic*i*j);
+                    weight[oc][ic][i][j] = 256 * std::sin(oc * ic * i * j);
                 }
             }
         }

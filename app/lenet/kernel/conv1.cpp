@@ -47,7 +47,7 @@ void conv1(
             }
             for (int i = 0; i < K - 1; i++) {
 #pragma HLS UNROLL
-                line_buff[i][col] = line_buff[i + 1][col];  
+                line_buff[i][col] = line_buff[i + 1][col];
             }
             line_buff[K - 1][col] = pix_in;
 

@@ -14,7 +14,7 @@ void fc1(
 #pragma HLS INTERFACE ap_ctrl_none port=return
 #pragma HLS INTERFACE axis port=in_stream
 #pragma HLS INTERFACE axis port=out_stream
-#pragma HLS DATAFLOW
+// #pragma HLS DATAFLOW
 
     /*** Weight ROM ***/
     weight_t weight[OUT_SIZE][IN_SIZE];
@@ -27,10 +27,10 @@ void fc1(
     /*** Input buffer ***/
     feature_t in_buff[IN_SIZE];
 #pragma HLS ARRAY_PARTITION variable=in_buff cyclic factor=16
-    for (int i = 0; i < 5 * 5; i++) {
+    for (int base = 0; base < IN_SIZE; base += 16) {
 #pragma HLS PIPELINE
         din_t din = in_stream.read();
-        _unpack_input(din, &in_buff[i * 16]);
+        _unpack_input(din, &in_buff[base]);
     }
 
     /*** Main loop ***/

@@ -15,14 +15,13 @@ constexpr int OUT_CH    = 6;                // output channel
 constexpr int OUT_H     = IN_H - K + 1;     // 28, output height
 constexpr int OUT_W     = IN_W - K + 1;     // 28, output width
 
-using din_t = ap_int<IN_CH*8>;
-using dout_t = ap_int<OUT_CH*8>;
+using din_t = ap_int<IN_CH * 8>;
+using dout_t = ap_int<OUT_CH * 8>;
 
 void conv1(
     hls::stream<din_t>& in_stream,
     hls::stream<dout_t>& out_stream
 );
-
 
 inline void _unpack_input(din_t& input, feature_t& _input) {
 #pragma HLS INLINE
@@ -34,7 +33,7 @@ inline void _init_weight(weight_t weight[OUT_CH][K][K]) {
     for (int oc = 0; oc < OUT_CH; oc++) {
         for (int i = 0; i < K; i++) {
             for (int j = 0; j < K; j++) {
-                weight[oc][i][j] = 256 * std::sin(oc*i*j);
+                weight[oc][i][j] = 256 * std::sin(oc * i * j);
             }
         }
     }

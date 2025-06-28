@@ -11,8 +11,8 @@ constexpr int IN_SIZE   = 16 * 5 * 5;   // 400, input size
 constexpr int OUT_SIZE  = 120;          // output size
 constexpr int PAR       = 10;           // parallel factor
 
-using din_t = ap_int<16*8>;
-using dout_t = ap_int<PAR*8>;
+using din_t = ap_int<16 * 8>;
+using dout_t = ap_int<PAR * 8>;
 
 void fc1(
     hls::stream<din_t>& in_stream,
@@ -32,7 +32,7 @@ inline void _init_weight(weight_t weight[OUT_SIZE][IN_SIZE]) {
 #pragma HLS UNROLL
         for (int j = 0; j < IN_SIZE; j++) {
 #pragma HLS UNROLL
-            weight[i][j] = 256 * std::sin(i*j);
+            weight[i][j] = 256 * std::sin(i * j);
         }
     }
 }
