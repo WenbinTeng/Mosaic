@@ -7,11 +7,12 @@
 
 #include "hls_stream.h"
 
+constexpr int PREV_PAR  = 16;           // previous parallel factor
 constexpr int IN_SIZE   = 16 * 5 * 5;   // 400, input size
 constexpr int OUT_SIZE  = 120;          // output size
-constexpr int PAR       = 10;           // parallel factor
+constexpr int PAR       = 6;           // parallel factor
 
-using din_t = ap_int<16 * 8>;
+using din_t = ap_int<PREV_PAR * 8>;
 using dout_t = ap_int<PAR * 8>;
 
 void fc1(
@@ -19,9 +20,9 @@ void fc1(
     hls::stream<dout_t>& out_stream
 );
 
-inline void _unpack_input(din_t& input, feature_t _input[16]) {
+inline void _unpack_input(din_t& input, feature_t _input[PREV_PAR]) {
 #pragma HLS INLINE
-    for (int i = 0; i < 16; i++) {
+    for (int i = 0; i < PREV_PAR; i++) {
         _input[i] = input.range(i * 8 + 7, i * 8);
     }
 }

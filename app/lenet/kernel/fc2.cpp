@@ -47,7 +47,7 @@ void fc2(
 
         /* (b). Compute sums at parallel factor. */
         for (int ic = 0; ic < IN_SIZE; ic++) {
-#pragma HLS PIPELINE
+#pragma HLS UNROLL
             feature_t fm = in_buff[ic];
             for (int p = 0; p < PAR; p++) {
 #pragma HLS UNROLL

@@ -26,8 +26,8 @@ void fc1(
 
     /*** Input buffer ***/
     feature_t in_buff[IN_SIZE];
-#pragma HLS ARRAY_PARTITION variable=in_buff cyclic factor=16
-    for (int base = 0; base < IN_SIZE; base += 16) {
+#pragma HLS ARRAY_PARTITION variable=in_buff cyclic factor=PREV_PAR
+    for (int base = 0; base < IN_SIZE; base += PREV_PAR) {
 #pragma HLS PIPELINE
         din_t din = in_stream.read();
         _unpack_input(din, &in_buff[base]);
@@ -47,7 +47,7 @@ void fc1(
 
         /* (b). Compute sums at parallel factor. */
         for (int ic = 0; ic < IN_SIZE; ic++) {
-#pragma HLS PIPELINE
+#pragma HLS UNROLL
             feature_t fm = in_buff[ic];
             for (int p = 0; p < PAR; p++) {
 #pragma HLS UNROLL
