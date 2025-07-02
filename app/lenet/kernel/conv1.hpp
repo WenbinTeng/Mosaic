@@ -50,7 +50,7 @@ inline void _pack_output(acc_t _output[OUT_CH], dout_t& output) {
 #pragma HLS INLINE
     for (int oc = 0; oc < OUT_CH; oc++) {
 #pragma HLS UNROLL
-        output.range(oc * 8 + 7, oc * 8) = _output[oc];
+        output.range(oc * 8 + 7, oc * 8) = (feature_t)_output[oc];
     }
 }
 

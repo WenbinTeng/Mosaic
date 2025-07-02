@@ -1,19 +1,19 @@
-#ifndef __FC2_H__
-#define __FC2_H__
+#ifndef __FC3_H__
+#define __FC3_H__
 
 #include "config.h"
 
 #include "hls_stream.h"
 
-constexpr int PREV_PAR  = 3;    // previous parallel factor
-constexpr int IN_SIZE   = 120;  // input size
-constexpr int OUT_SIZE  = 84;   // output size
-constexpr int PAR       = 6;    // parallel factor
+constexpr int PREV_PAR  = 6;    // previous parallel factor
+constexpr int IN_SIZE   = 84;   // input size
+constexpr int OUT_SIZE  = 10;   // output size
+constexpr int PAR       = 10;   // parallel factor
 
 using din_t = ap_int<PREV_PAR * 8>;
 using dout_t = ap_int<PAR * 8>;
 
-void fc2(
+void fc3(
     hls::stream<din_t>& in_stream,
     hls::stream<dout_t>& out_stream,
     const weight_t weight[OUT_SIZE][IN_SIZE],

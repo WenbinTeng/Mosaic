@@ -2,27 +2,23 @@
 
 /**
  *  IN:     400
- *  WEIGHT: 400*120
+ *  WEIGHT: 120*400
  *  BIAS:   120
  *  OUT:    120
  */
 
 void fc1(
     hls::stream<din_t>& in_stream,
-    hls::stream<dout_t>& out_stream
+    hls::stream<dout_t>& out_stream,
+    const weight_t weight[OUT_SIZE][IN_SIZE],
+    const acc_t bias[OUT_SIZE]
 ) {
 #pragma HLS INTERFACE ap_ctrl_none port=return
 #pragma HLS INTERFACE axis port=in_stream
 #pragma HLS INTERFACE axis port=out_stream
-// #pragma HLS DATAFLOW
-
-    /*** Weight ROM ***/
-    weight_t weight[OUT_SIZE][IN_SIZE];
-#pragma HLS BIND_STORAGE variable=weight type=ROM_1P impl=bram
-
-    /*** Bias ROM ***/
-    acc_t bias[OUT_SIZE];
-#pragma HLS BIND_STORAGE variable=bias type=ROM_1P impl=bram
+#pragma HLS INTERFACE bram port=weight
+#pragma HLS INTERFACE bram port=bias
+#pragma HLS ARRAY_PARTITION variable=weight complete dim=1
 
     /*** Input buffer ***/
     feature_t in_buff[IN_SIZE];

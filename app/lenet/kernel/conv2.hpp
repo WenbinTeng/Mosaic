@@ -56,7 +56,7 @@ inline void _pack_output(acc_t _output[PAR], dout_t& output) {
 #pragma HLS INLINE
     for (int p = 0; p < PAR; p++) {
 #pragma HLS UNROLL
-        output.range(p * 8 + 7, p * 8) = _output[p];
+        output.range(p * 8 + 7, p * 8) = (feature_t)_output[p];
     }
 }
 

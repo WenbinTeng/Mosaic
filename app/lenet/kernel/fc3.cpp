@@ -1,13 +1,13 @@
-#include "fc2.hpp"
+#include "fc3.hpp"
 
 /**
- *  IN:     120
- *  WEIGHT: 84*120
- *  BIAS:   84
- *  OUT:    84
+ *  IN:     84
+ *  WEIGHT: 10*84
+ *  BIAS:   10
+ *  OUT:    10
  */
 
-void fc2(
+void fc3(
     hls::stream<din_t>& in_stream,
     hls::stream<dout_t>& out_stream,
     const weight_t weight[OUT_SIZE][IN_SIZE],
