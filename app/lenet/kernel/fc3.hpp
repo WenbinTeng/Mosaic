@@ -5,13 +5,14 @@
 
 #include "hls_stream.h"
 
-constexpr int PREV_PAR  = 6;    // previous parallel factor
-constexpr int IN_SIZE   = 84;   // input size
-constexpr int OUT_SIZE  = 10;   // output size
-constexpr int PAR       = 10;   // parallel factor
-
-using din_t = ap_int<PREV_PAR * 8>;
-using dout_t = ap_int<PAR * 8>;
+namespace fc3_space {
+constexpr int PREV_PAR = 6;          // previous parallel factor
+constexpr int IN_SIZE = 84;          // input size
+constexpr int OUT_SIZE = 10;         // output size
+constexpr int PAR = 10;              // parallel factor
+using din_t = ap_int<PREV_PAR * 8>;  // data input type
+using dout_t = ap_int<PAR * 8>;      // data output type
+}  // namespace fc3_space
 
 void fc3(
     hls::stream<din_t>& in_stream,

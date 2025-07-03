@@ -5,8 +5,10 @@
 
 #include "hls_stream.h"
 
-constexpr int IMG_H     = 32; // image height
-constexpr int IMG_W     = 32; // image width
+namespace top_in_space {
+constexpr int IMG_H = 32;  // image height
+constexpr int IMG_W = 32;  // image width
+}  // namespace top_in_space
 
 void top_in(
     feature_t img[IMG_H][IMG_W],
