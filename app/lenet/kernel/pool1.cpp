@@ -63,9 +63,9 @@ void pool1(
 
                 for (int c = 0; c < CH; c++) {
 #pragma HLS UNROLL
-                    feature_t m0 = (window_buff[0][0][c] > window_buff[0][1][c]) ? window_buff[0][0][c] : window_buff[0][1][c];
-                    feature_t m1 = (window_buff[1][0][c] > window_buff[1][1][c]) ? window_buff[1][0][c] : window_buff[1][1][c];
-                    maxv[c] = (m0 > m1) ? m0 : m1;
+                    acc_t sum = (window_buff[0][0] + window_buff[0][1] +
+                                 window_buff[1][0] + window_buff[1][1]);
+                    maxv[c] = sum / 4;
                 }
 
                 dout_t dout;
