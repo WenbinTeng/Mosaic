@@ -17,8 +17,8 @@ constexpr int OUT_CH = 6;           // output channel
 constexpr int OUT_H = IN_H - K + 1; // 28, output height
 constexpr int OUT_W = IN_W - K + 1; // 28, output width
 
-using din_t = ap_int<IN_CH * 8>;    // data input type
-using dout_t = ap_int<OUT_CH * 8>;  // data output type
+using din_t = ap_int<IN_CH * 8>;   // data input type
+using dout_t = ap_int<OUT_CH * 8>; // data output type
 
 void conv1(
     hls::stream<din_t>& in_stream,

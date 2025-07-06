@@ -18,8 +18,8 @@ constexpr int OUT_H = IN_H - K + 1; // 10, output height
 constexpr int OUT_W = IN_W - K + 1; // 10, output width
 constexpr int PAR = 16;             // parallel factor
 
-using din_t = ap_int<IN_CH * 8>;    // data input type
-using dout_t = ap_int<PAR * 8>;     // data output type
+using din_t = ap_int<IN_CH * 8>; // data input type
+using dout_t = ap_int<PAR * 8>;  // data output type
 
 void conv2(
     hls::stream<din_t>& in_stream,

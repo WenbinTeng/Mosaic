@@ -7,8 +7,8 @@
 
 namespace top_in_space {
 
-constexpr int IMG_H = 32;  // image height
-constexpr int IMG_W = 32;  // image width
+constexpr int IMG_H = 32; // image height
+constexpr int IMG_W = 32; // image width
 
 void top_in(
     feature_t img[IMG_H][IMG_W],
