@@ -76,7 +76,6 @@ void conv2(
     /*** Main loop ***/
     for (int row = 0; row < IN_H + K - 1; row++) {
         for (int col = 0; col < IN_W + K - 1; col++) {
-#pragma HLS PIPELINE
 
             /*** 1. Update line buffer. ***/
             feature_t pix_in[IN_CH];
@@ -115,7 +114,7 @@ void conv2(
             /*** 3. Compute partial sums. ***/
             if (row >= K - 1 && col >= K - 1) {
                 for (int pbase = 0; pbase < OUT_CH; pbase += PAR) {
-#pragma HLS UNROLL
+#pragma HLS PIPELINE
 
                     /* (a). Partial sums buffer. */
                     acc_t psum[PAR];
