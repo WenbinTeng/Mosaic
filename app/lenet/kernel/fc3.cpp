@@ -7,18 +7,25 @@
  *  OUT:    10
  */
 
+namespace fc3_space {
+
 void fc3(
     hls::stream<din_t>& in_stream,
-    hls::stream<dout_t>& out_stream,
-    const weight_t weight[OUT_SIZE][IN_SIZE],
-    const acc_t bias[OUT_SIZE]
+    hls::stream<dout_t>& out_stream
 ) {
 #pragma HLS INTERFACE ap_ctrl_none port=return
 #pragma HLS INTERFACE axis port=in_stream
 #pragma HLS INTERFACE axis port=out_stream
-#pragma HLS INTERFACE bram port=weight
-#pragma HLS INTERFACE bram port=bias
-#pragma HLS ARRAY_PARTITION variable=weight complete dim=1
+
+    /*** Weight ROM ***/
+    weight_t weight[OUT_SIZE][IN_SIZE];
+#pragma HLS BIND_STORAGE variable=weight type=rom_1p impl=bram
+    _init_weight(weight);
+
+    /*** Bias ROM ***/
+    acc_t bias[OUT_SIZE];
+#pragma HLS BIND_STORAGE variable=bias type=rom_1p impl=bram
+    _init_bias(bias);
 
     /*** Input buffer ***/
     feature_t in_buff[IN_SIZE];
@@ -62,3 +69,5 @@ void fc3(
         out_stream.write(dout);
     }
 }
+
+}  // namespace fc3_space

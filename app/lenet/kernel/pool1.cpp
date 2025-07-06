@@ -6,6 +6,8 @@
  *  OUT:    6*14*14
  */
 
+namespace pool1_space {
+
 void pool1(
     hls::stream<din_t>& in_stream,
     hls::stream<dout_t>& out_stream
@@ -63,8 +65,8 @@ void pool1(
 
                 for (int c = 0; c < CH; c++) {
 #pragma HLS UNROLL
-                    acc_t sum = (window_buff[0][0] + window_buff[0][1] +
-                                 window_buff[1][0] + window_buff[1][1]);
+                    acc_t sum = (window_buff[0][0][c] + window_buff[0][1][c] +
+                                 window_buff[1][0][c] + window_buff[1][1][c]);
                     maxv[c] = sum / 4;
                 }
 
@@ -75,3 +77,5 @@ void pool1(
         }
     }
 }
+
+}  // namespace pool1_space

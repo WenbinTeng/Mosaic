@@ -8,6 +8,8 @@
  *  STRIDE: 1
  */
 
+namespace conv1_space {
+
 void conv1(
     hls::stream<din_t>& in_stream,
     hls::stream<dout_t>& out_stream
@@ -18,12 +20,12 @@ void conv1(
 
     /*** Weight ROM ***/
     weight_t weight[OUT_CH][K][K];
-#pragma HLS BIND_STORAGE variable=weight type=rom_1p impl=bram
+#pragma HLS BIND_STORAGE variable=weight type=rom_1p impl=auto
     _init_weight(weight);
 
     /*** Bias ROM ***/
     acc_t bias[OUT_CH];
-#pragma HLS BIND_STORAGE variable=bias type=rom_1p impl=bram
+#pragma HLS BIND_STORAGE variable=bias type=rom_1p impl=auto
     _init_bias(bias);
 
     /*** Line buffer ***/
@@ -90,3 +92,5 @@ void conv1(
         }
     }
 }
+
+} // namespace conv1_space

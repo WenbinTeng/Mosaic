@@ -6,15 +6,16 @@
 #include "hls_stream.h"
 
 namespace pool1_space {
+
 constexpr int CH = 6;            // channel
 constexpr int IN_H = 28;         // input height
 constexpr int IN_W = 28;         // input width
 constexpr int K = 2;             // kernel size
 constexpr int OUT_H = IN_H / K;  // 14, output height
 constexpr int OUT_W = IN_W / K;  // 14, output width
+
 using din_t = ap_int<CH * 8>;    // data input type
 using dout_t = ap_int<CH * 8>;   // data output type
-}  // namespace pool1_space
 
 void pool1(
     hls::stream<din_t>& in_stream,
@@ -36,5 +37,7 @@ inline void _pack_output(feature_t _output[CH], dout_t& output) {
         output.range(c * 8 + 7, c * 8) = _output[c];
     }
 }
+
+}  // namespace pool1_space
 
 #endif

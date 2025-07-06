@@ -17,8 +17,8 @@
 #include "top_out.hpp"
 
 void top(
-    feature_t* img,
-    feature_t* res
+    feature_t img[top_in_space::IMG_H][top_in_space::IMG_W],
+    feature_t res[top_out_space::OUT_NUM]
 );
 
 #endif
