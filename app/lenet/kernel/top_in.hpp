@@ -10,11 +10,9 @@ namespace top_in_space {
 constexpr int IMG_H = 32;  // image height
 constexpr int IMG_W = 32;  // image width
 
-using in_type = ap_int<8>; // image stream input type
-
 void top_in(
     feature_t img[IMG_H][IMG_W],
-    hls::stream<in_type>& img_stream
+    hls::stream<feature_t>& img_stream
 );
 
 } // namespace top_in_space

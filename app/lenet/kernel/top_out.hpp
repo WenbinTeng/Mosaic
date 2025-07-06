@@ -9,10 +9,8 @@ namespace top_out_space {
 
 constexpr int OUT_NUM = 10; // output number
 
-using out_type = ap_int<80>; // result stream output type
-
 void top_out(
-    hls::stream<out_type>& res_stream,
+    hls::stream<feature_t>& res_stream,
     feature_t res[OUT_NUM]
 );
 

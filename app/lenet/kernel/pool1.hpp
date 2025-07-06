@@ -22,22 +22,6 @@ void pool1(
     hls::stream<dout_t>& out_stream
 );
 
-inline void _unpack_input(din_t& input, feature_t _input[CH]) {
-#pragma HLS INLINE
-    for (int c = 0; c < CH; c++) {
-#pragma HLS UNROLL
-        _input[c] = input.range(c * 8 + 7, c * 8);
-    }
-}
-
-inline void _pack_output(feature_t _output[CH], dout_t& output) {
-#pragma HLS INLINE
-    for (int c = 0; c < CH; c++) {
-#pragma HLS UNROLL
-        output.range(c * 8 + 7, c * 8) = _output[c];
-    }
-}
-
 }  // namespace pool1_space
 
 #endif

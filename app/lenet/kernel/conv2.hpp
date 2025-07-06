@@ -26,42 +26,6 @@ void conv2(
     hls::stream<dout_t>& out_stream
 );
 
-inline void _unpack_input(din_t& input, feature_t _input[IN_CH]) {
-#pragma HLS INLINE
-    for (int ic = 0; ic < IN_CH; ic++) {
-#pragma HLS UNROLL
-        _input[ic] = input.range(ic * 8 + 7, ic * 8);
-    }
-}
-
-inline void _init_weight(weight_t weight[OUT_CH][IN_CH][K][K]) {
-#pragma HLS INLINE
-    for (int oc = 0; oc < OUT_CH; oc++) {
-        for (int ic = 0; ic < IN_CH; ic++) {
-            for (int i = 0; i < K; i++) {
-                for (int j = 0; j < K; j++) {
-                    weight[oc][ic][i][j] = 256 * std::sin(oc * ic * i * j);
-                }
-            }
-        }
-    }
-}
-
-inline void _init_bias(acc_t bias[OUT_CH]) {
-#pragma HLS INLINE
-    for (int oc = 0; oc < OUT_CH; oc++) {
-        bias[oc] = 65536 * std::sin(oc);
-    }
-}
-
-inline void _pack_output(acc_t _output[PAR], dout_t& output) {
-#pragma HLS INLINE
-    for (int p = 0; p < PAR; p++) {
-#pragma HLS UNROLL
-        output.range(p * 8 + 7, p * 8) = (feature_t)_output[p];
-    }
-}
-
 } // namespace conv2_space
 
 #endif
