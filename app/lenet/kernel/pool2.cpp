@@ -33,12 +33,12 @@ void pool2(
 
     /*** Line buffer ***/
     feature_t line_buff[CH][K][IN_W];
-#pragma HLS ARRAY_PARTITION variable=line_buff complete dim=1
-#pragma HLS ARRAY_PARTITION variable=line_buff complete dim=2
+#pragma HLS ARRAY_PARTITION variable=line_buff type=complete dim=1
+#pragma HLS ARRAY_PARTITION variable=line_buff type=complete dim=2
 
     /*** Window buffer ***/
     feature_t window_buff[K][K][CH];
-#pragma HLS ARRAY_PARTITION variable=window_buff complete dim=0
+#pragma HLS ARRAY_PARTITION variable=window_buff type=complete dim=0
 
     /*** Main loop ***/
     for (int row = 0; row < IN_H; row++) {
@@ -47,7 +47,7 @@ void pool2(
 
             /*** 1. Update line buffer (per output channel). ***/
             feature_t pix_in[CH];
-#pragma HLS ARRAY_PARTITION variable=pix_in complete
+#pragma HLS ARRAY_PARTITION variable=pix_in type=complete
             if (row < IN_H && col < IN_W) {
                 din_t din = in_stream.read();
                 _unpack_input(din, pix_in);
@@ -74,7 +74,7 @@ void pool2(
             /*** 3. Output max values ***/
             if ((row & 1) && (col & 1)) {
                 feature_t maxv[CH];
-#pragma HLS ARRAY_PARTITION variable=maxv complete
+#pragma HLS ARRAY_PARTITION variable=maxv type=complete
 
                 for (int c = 0; c < CH; c++) {
 #pragma HLS UNROLL

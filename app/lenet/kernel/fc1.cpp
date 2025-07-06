@@ -73,7 +73,7 @@ void fc1(
 
         /* (a). Partial sums buffer. */
         acc_t psum[PAR];
-#pragma HLS ARRAY_PARTITION variable=psum complete
+#pragma HLS ARRAY_PARTITION variable=psum type=complete
         for (int p = 0; p < PAR; p++) {
 #pragma HLS UNROLL
             psum[p] = bias[pbase + p];

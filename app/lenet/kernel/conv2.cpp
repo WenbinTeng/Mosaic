@@ -66,12 +66,12 @@ void conv2(
 
     /*** Line buffer ***/
     feature_t line_buff[IN_CH][K][IN_W + K - 1];
-#pragma HLS ARRAY_PARTITION variable=line_buff complete dim=1
-#pragma HLS ARRAY_PARTITION variable=line_buff complete dim=2
+#pragma HLS ARRAY_PARTITION variable=line_buff type=complete dim=1
+#pragma HLS ARRAY_PARTITION variable=line_buff type=complete dim=2
 
     /*** Window buffer ***/
     feature_t window_buff[IN_CH][K][K];
-#pragma HLS ARRAY_PARTITION variable=window_buff complete dim=0
+#pragma HLS ARRAY_PARTITION variable=window_buff type=complete dim=0
 
     /*** Main loop ***/
     for (int row = 0; row < IN_H + K - 1; row++) {
@@ -79,7 +79,7 @@ void conv2(
 
             /*** 1. Update line buffer. ***/
             feature_t pix_in[IN_CH];
-#pragma HLS ARRAY_PARTITION variable=pix_in complete
+#pragma HLS ARRAY_PARTITION variable=pix_in type=complete
             if (row < IN_H && col < IN_W) {
                 din_t din = in_stream.read();
                 _unpack_input(din, pix_in);
@@ -118,7 +118,7 @@ void conv2(
 
                     /* (a). Partial sums buffer. */
                     acc_t psum[PAR];
-#pragma HLS ARRAY_PARTITION variable=psum complete
+#pragma HLS ARRAY_PARTITION variable=psum type=complete
                     for (int p = 0; p < PAR; p++) {
 #pragma HLS UNROLL
                         psum[p] = bias[pbase + p];

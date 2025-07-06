@@ -17,8 +17,6 @@ constexpr int PAR = 3;              // parallel factor
 using din_t = ap_int<PREV_PAR * 8>; // data input type
 using dout_t = ap_int<PAR * 8>;     // data output type
 
-using namespace fc1_space;
-
 void fc1(
     hls::stream<din_t>& in_stream,
     hls::stream<dout_t>& out_stream

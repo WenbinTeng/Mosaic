@@ -61,11 +61,11 @@ void conv1(
 
     /*** Line buffer ***/
     feature_t line_buff[K][IN_W + K - 1];
-#pragma HLS ARRAY_PARTITION variable=line_buff complete dim=1
+#pragma HLS ARRAY_PARTITION variable=line_buff type=complete dim=1
 
     /*** Window buffer ***/
     feature_t window_buff[K][K];
-#pragma HLS ARRAY_PARTITION variable=window_buff complete dim=0
+#pragma HLS ARRAY_PARTITION variable=window_buff type=complete dim=0
 
     /*** Main loop ***/
     for (int row = 0; row < IN_H + K - 1; row++) {
@@ -99,7 +99,7 @@ void conv1(
 
                 /* (a). Partial sums buffer. */
                 acc_t psum[OUT_CH];
-#pragma HLS ARRAY_PARTITION variable=psum complete
+#pragma HLS ARRAY_PARTITION variable=psum type=complete
 
                 /* (b). Compute sums for all output channels. */
                 for (int oc = 0; oc < OUT_CH; oc++) {

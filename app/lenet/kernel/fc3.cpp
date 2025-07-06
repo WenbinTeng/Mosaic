@@ -73,7 +73,7 @@ void fc3(
 
         /* (a). Partial sums buffer. */
         acc_t psum[PAR];
-#pragma HLS ARRAY_PARTITION variable=psum complete
+#pragma HLS ARRAY_PARTITION variable=psum type=complete
         for (int p = 0; p < PAR; p++) {
 #pragma HLS UNROLL
             psum[p] = bias[pbase + p];
@@ -91,10 +91,6 @@ void fc3(
         }
 
         /* (c). Write outputs. */
-        for (int p = 0; p < PAR; p++) {
-#pragma HLS UNROLL
-            psum[p] = relu(psum[p]);
-        }
         dout_t dout;
         _pack_output(psum, dout);
         out_stream.write(dout);
