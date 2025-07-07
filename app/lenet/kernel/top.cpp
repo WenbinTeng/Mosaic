@@ -7,6 +7,7 @@ void top(
 #pragma HLS INTERFACE ap_ctrl_none port=return
 #pragma HLS INTERFACE m_axi port=img offset=slave bundle=data
 #pragma HLS INTERFACE m_axi port=res offset=slave bundle=data
+#pragma HLS DATAFLOW
 
     hls_thread_local hls::stream<feature_t> in_stream("in_stream");
     hls_thread_local hls::stream<conv1_space::dout_t> conv1_out_stream("conv1_out_stream");

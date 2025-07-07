@@ -9,6 +9,36 @@
  *  PADDING: 0
  */
 
+namespace conv1_space {
+
+inline void _pack_output(acc_t _output[PAR], dout_t& output) {
+#pragma HLS INLINE
+    for (int p = 0; p < PAR; p++) {
+#pragma HLS UNROLL
+        output.range(p * 8 + 7, p * 8) = (feature_t)_output[p];
+    }
+}
+
+inline void _init_weight(weight_t weight[OUT_CH][IN_CH][K][K]) {
+#pragma HLS INLINE
+    for (int oc = 0; oc < OUT_CH; oc++) {
+        for (int ic = 0; ic < IN_CH; ic++) {
+            for (int i = 0; i < K; i++) {
+                for (int j = 0; j < K; j++) {
+                    weight[oc][ic][i][j] = 256 * std::sin(oc * ic * i * j);
+                }
+            }
+        }
+    }
+}
+
+inline void _init_bias(bias_t bias[OUT_CH]) {
+#pragma HLS INLINE
+    for (int oc = 0; oc < OUT_CH; oc++) {
+        bias[oc] = 256 * std::sin(oc);
+    }
+}
+
 void conv1(
     hls::stream<din_t>& in_stream,
     hls::stream<dout_t>& out_stream
@@ -19,34 +49,35 @@ void conv1(
 
     /*** Weight ROM ***/
     weight_t weight[OUT_CH][IN_CH][K][K];
-#pragma HLS BIND_STORAGE variable=weight type=rom_1p impl=bram
+#pragma HLS BIND_STORAGE variable=weight type=rom_1p impl=auto
     _init_weight(weight);
 
     /*** Bias ROM ***/
-    acc_t bias[OUT_CH];
-#pragma HLS BIND_STORAGE variable=bias type=rom_1p impl=bram
+    bias_t bias[OUT_CH];
+#pragma HLS BIND_STORAGE variable=bias type=rom_1p impl=auto
     _init_bias(bias);
 
     /*** Line buffer ***/
     feature_t line_buff[IN_CH][K][IN_W + K - 1];
-#pragma HLS ARRAY_PARTITION variable=line_buff complete dim=1
-#pragma HLS ARRAY_PARTITION variable=line_buff complete dim=2
+#pragma HLS ARRAY_PARTITION variable=line_buff type=complete dim=1
+#pragma HLS ARRAY_PARTITION variable=line_buff type=complete dim=2
 
     /*** Window buffer ***/
     feature_t window_buff[IN_CH][K][K];
-#pragma HLS ARRAY_PARTITION variable=window_buff complete dim=0
+#pragma HLS ARRAY_PARTITION variable=window_buff type=complete dim=1
 
     /*** Main loop ***/
     for (int row = 0; row < IN_H + K - 1; row++) {
         for (int col = 0; col < IN_W + K - 1; col++) {
-#pragma HLS PIPELINE
 
             /*** 1. Update line buffer. ***/
             feature_t pix_in[IN_CH];
-#pragma HLS ARRAY_PARTITION variable=pix_in complete
+#pragma HLS ARRAY_PARTITION variable=pix_in type=complete
             if (row < IN_H && col < IN_W) {
-                din_t din = in_stream.read();
-                _unpack_input(din, pix_in);
+                for (int ic = 0; ic < IN_CH; ic++) {
+#pragma HLS PIPELINE
+                    pix_in[ic] = in_stream.read();
+                }
             } else {
                 for (int ic = 0; ic < IN_CH; ic++) {
 #pragma HLS UNROLL
@@ -80,36 +111,36 @@ void conv1(
                                 (((col - (K - 1)) & (S - 1)) == 0);
 
             /*** 3. Compute partial sums. ***/
-            if (window_valid && stride_valid) {
-                for (int pbase = 0; pbase < OUT_CH; pbase += PAR) {
-#pragma HLS UNROLL
+            for (int pbase = 0; pbase < OUT_CH; pbase += PAR) {
+#pragma HLS PIPELINE
 
-                    /* (a). Partial sums buffer. */
-                    acc_t psum[PAR];
-#pragma HLS ARRAY_PARTITION variable=psum complete
-                    for (int p = 0; p < PAR; p++) {
+                /* (a). Partial sums buffer. */
+                acc_t psum[PAR];
+#pragma HLS ARRAY_PARTITION variable=psum type=complete
+                for (int p = 0; p < PAR; p++) {
 #pragma HLS UNROLL
-                        psum[p] = bias[pbase + p];
-                    }
+                    psum[p] = bias[pbase + p];
+                }
 
-                    /* (b). Compute sums for all output channels. */
-                    for (int ic = 0; ic < IN_CH; ic++) {
+                /* (b). Compute sums for all output channels. */
+                for (int ic = 0; ic < IN_CH; ic++) {
 #pragma HLS UNROLL
-                        for (int r = 0; r < K; r++) {
+                    for (int r = 0; r < K; r++) {
 #pragma HLS UNROLL
-                            for (int c = 0; c < K; c++) {
+                        for (int c = 0; c < K; c++) {
 #pragma HLS UNROLL
-                                feature_t fm = window_buff[ic][r][c];
-                                for (int p = 0; p < PAR; p++) {
+                            feature_t fm = window_buff[ic][r][c];
+                            for (int p = 0; p < PAR; p++) {
 #pragma HLS UNROLL
-                                    weight_t w = weight[pbase + p][ic][r][c];
-                                    psum[p] += fm * w;
-                                }
+                                weight_t w = weight[pbase + p][ic][r][c];
+                                psum[p] += fm * w;
                             }
                         }
                     }
+                }
 
-                    /* (c). Write outputs. */
+                /* (c). Write outputs. */
+                if (window_valid && stride_valid) {
                     for (int p = 0; p < PAR; p++) {
 #pragma HLS UNROLL
                         psum[p] = relu(psum[p]);
@@ -122,3 +153,5 @@ void conv1(
         }
     }
 }
+
+} // namespace conv1_space

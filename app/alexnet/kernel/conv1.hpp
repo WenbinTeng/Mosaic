@@ -1,6 +1,8 @@
 #ifndef __CONV1_H__
 #define __CONV1_H__
 
+#include <cmath>
+
 #include "config.h"
 
 #include "hls_stream.h"
@@ -16,10 +18,10 @@ constexpr int P = 0;                              // padding size
 constexpr int OUT_CH = 96;                        // output channel
 constexpr int OUT_H = (IN_H - K + 2 * P) / S + 1; // 55, output height
 constexpr int OUT_W = (IN_W - K + 2 * P) / S + 1; // 55, output width
-constexpr int PAR = 16;                           // parallel factor
+constexpr int PAR = 4;                           // parallel factor
 
-using din_t = ap_int<IN_CH * 8>; // data input type
-using dout_t = ap_int<PAR * 8>;  // data output type
+using din_t = feature_t;        // data input type
+using dout_t = ap_int<PAR * 8>; // data output type
 
 void conv1(
     hls::stream<din_t>& in_stream,

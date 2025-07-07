@@ -2,25 +2,25 @@
 #define __TYPEDEF_H__
 
 // resolution 256x256
-const int MAX_X = 256;
-const int MAX_Y = 256;
+constexpr int MAX_X = 256;
+constexpr int MAX_Y = 256;
 
 // number of values in frame buffer: 32 bits
-const int NUM_FB = MAX_X * MAX_Y / 4;
+constexpr int NUM_FB = MAX_X * MAX_Y / 4;
 // dataset information
-const int NUM_3D_TRI = 3192;
+constexpr int NUM_3D_TRI = 3192;
 
 // hls header
 #include "ap_int.h"
 // specialized datatypes
-typedef ap_uint<1> bit1;
-typedef ap_uint<2> bit2;
-typedef ap_uint<8> bit8;
-typedef ap_uint<16> bit16;
-typedef ap_uint<32> bit32;
+using bit1 = ap_uint<1>;
+using bit2 = ap_uint<2>;
+using bit8 = ap_uint<8>;
+using bit16 = ap_uint<16>;
+using bit32 = ap_uint<32>;
 
 // struct: 3D triangle
-typedef struct {
+struct triangle_3d_t {
     bit8 x0;
     bit8 y0;
     bit8 z0;
@@ -30,10 +30,10 @@ typedef struct {
     bit8 x2;
     bit8 y2;
     bit8 z2;
-} Triangle3D;
+};
 
 // struct: 2D triangle
-typedef struct {
+struct triangle_2d_t {
     bit8 x0;
     bit8 y0;
     bit8 x1;
@@ -41,10 +41,10 @@ typedef struct {
     bit8 x2;
     bit8 y2;
     bit8 z;
-} Triangle2D;
+};
 
 // struct: triangle info
-typedef struct {
+struct triangle_info_t {
     bit2 flag;
     bit8 minX;
     bit8 maxX;
@@ -52,21 +52,21 @@ typedef struct {
     bit8 maxY;
     bit8 width;
     bit16 box;
-} TriangleInfo;
+};
 
 // struct: candidate pixels
-typedef struct {
+struct fragment_t {
     bit8 x;
     bit8 y;
     bit8 z;
     bit8 color;
-} Fragment;
+};
 
 // struct: colored pixel
-typedef struct {
+struct pixel_t {
     bit8 x;
     bit8 y;
     bit8 color;
-} Pixel;
+};
 
 #endif
