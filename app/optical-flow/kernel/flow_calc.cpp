@@ -1,0 +1,49 @@
+#include "flow_calc.hpp"
+
+namespace flow_calc_space {
+
+void flow_calc(
+    hls::stream<tensor_t> &tensor_stream,
+    hls::stream<velocity_t> &output_stream
+) {
+#pragma HLS INTERFACE ap_ctrl_none port=return
+#pragma HLS INTERFACE axis port=tensor_stream
+#pragma HLS INTERFACE axis port=output_stream
+
+    static outer_pixel_t buf[2];
+    for (int r = 0; r < MAX_HEIGHT; r++) {
+        for (int c = 0; c < MAX_WIDTH; c++) {
+#pragma HLS pipeline II = 1
+            tensor_t tmp_tensor = tensor_stream.read();
+            if (r >= 2 && r < MAX_HEIGHT - 2 && c >= 2 && c < MAX_WIDTH - 2) {
+                calc_pixel_t t1 = (calc_pixel_t)tmp_tensor.val[0];
+                calc_pixel_t t2 = (calc_pixel_t)tmp_tensor.val[1];
+                calc_pixel_t t3 = (calc_pixel_t)tmp_tensor.val[2];
+                calc_pixel_t t4 = (calc_pixel_t)tmp_tensor.val[3];
+                calc_pixel_t t5 = (calc_pixel_t)tmp_tensor.val[4];
+                calc_pixel_t t6 = (calc_pixel_t)tmp_tensor.val[5];
+
+                calc_pixel_t denom = t1 * t2 - t4 * t4;
+                calc_pixel_t numer0 = t6 * t4 - t5 * t2;
+                calc_pixel_t numer1 = t5 * t4 - t6 * t1;
+
+                if (denom != 0) {
+                    buf[0] = numer0 / denom;
+                    buf[1] = numer1 / denom;
+                } else {
+                    buf[0] = 0;
+                    buf[1] = 0;
+                }
+            } else {
+                buf[0] = buf[1] = 0;
+            }
+
+            velocity_t v;
+            v.x = (vel_pixel_t)buf[0];
+            v.y = (vel_pixel_t)buf[1];
+            output_stream.write(v);
+        }
+    }
+}
+
+}  // namespace flow_calc_space

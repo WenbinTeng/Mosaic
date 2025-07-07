@@ -1,36 +1,36 @@
 #ifndef __TYPEDEF_H__
 #define __TYPEDEF_H__
 
-const int MAX_HEIGHT = 436;
-const int MAX_WIDTH = 1024;
+constexpr int MAX_HEIGHT = 436;
+constexpr int MAX_WIDTH = 1024;
 
 #include "ap_fixed.h"
-typedef ap_fixed<17, 9> input_t;
-typedef ap_fixed<32, 13> pixel_t;
-typedef ap_fixed<32, 27> outer_pixel_t;
-typedef ap_fixed<64, 56> calc_pixel_t;
-typedef ap_fixed<32, 13> vel_pixel_t;
+using input_t = ap_fixed<17, 9>;
+using pixel_t = ap_fixed<32, 13>;
+using outer_pixel_t = ap_fixed<32, 27>;
+using calc_pixel_t = ap_fixed<64, 56>;
+using vel_pixel_t = ap_fixed<32, 13>;
 
-typedef struct {
+struct gradient_t {
     pixel_t x;
     pixel_t y;
     pixel_t z;
-} gradient_t;
+};
 
-typedef struct {
+struct outer_t {
     outer_pixel_t val[6];
-} outer_t;
+};
 
-typedef struct {
+struct tensor_t {
     outer_pixel_t val[6];
-} tensor_t;
+};
 
-typedef struct {
+struct velocity_t {
     vel_pixel_t x;
     vel_pixel_t y;
-} velocity_t;
+};
 
 #include "ap_int.h"
-typedef ap_uint<64> frames_t;
+using frames_t = ap_uint<64>;
 
 #endif
