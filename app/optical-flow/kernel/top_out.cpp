@@ -8,7 +8,7 @@ void top_out(
 ) {
 #pragma HLS INTERFACE ap_ctrl_none port=return
 #pragma HLS INTERFACE axis port=output_stream
-#pragma HLS INTERFACE m_axi port=output offset=slave bundle=data
+#pragma HLS INTERFACE m_axi port=outputs offset=slave bundle=data
 
     for (int r = 0; r < MAX_HEIGHT; r++) {
         for (int c = 0; c < MAX_WIDTH; c++) {
