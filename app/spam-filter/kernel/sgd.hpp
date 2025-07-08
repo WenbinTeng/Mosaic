@@ -1,24 +1,19 @@
-/*===============================================================*/
-/*                                                               */
-/*                            sgd.h                              */
-/*                                                               */
-/*          Top-level hardware function declaration              */
-/*                                                               */
-/*===============================================================*/
-
-#include "hls_stream.h"
+#ifndef __SGD_H__
+#define __SGD_H__
 
 #include "typedef.h"
 #include "lut.h"
 
-// top-level function declaration
-#pragma SDS data mem_attribute(data:NON_CACHEABLE|PHYSICAL_CONTIGUOUS, label:CACHEABLE|PHYSICAL_CONTIGUOUS, theta:CACHEABLE|PHYSICAL_CONTIGUOUS)
-#pragma SDS data data_mover(data:AXIDMA_SG, label:AXIFIFO, theta:AXIDMA_SG)
-#pragma SDS data sys_port(data:AFI, label:AFI, theta:AFI)
-#pragma SDS data zero_copy(theta[0:NUM_FEATURES/F_VECTOR_SIZE])
-#pragma SDS data copy(data[0:NUM_FEATURES*NUM_TRAINING/D_VECTOR_SIZE])
-#pragma SDS data zero_copy(label[0:NUM_TRAINING/L_VECTOR_SIZE])
-#pragma SDS data access_pattern(data:SEQUENTIAL, label:SEQUENTIAL, theta:SEQUENTIAL)
-void spam_fil(VectorDataType data[NUM_FEATURES * NUM_TRAINING / D_VECTOR_SIZE],
-              VectorLabelType label[NUM_TRAINING / L_VECTOR_SIZE],
-              VectorFeatureType theta[NUM_FEATURES / F_VECTOR_SIZE]);
+#include "hls_stream.h"
+
+namespace sgd_space {
+
+void sgd(
+    vec_data_t data[NUM_FEATURES * NUM_TRAINING / D_VECTOR_SIZE],
+    vec_label_t label[NUM_TRAINING / L_VECTOR_SIZE],
+    vec_feature_t theta[NUM_FEATURES / F_VECTOR_SIZE]
+);
+
+}  // namespace sgd_space
+
+#endif

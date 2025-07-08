@@ -1,5 +1,7 @@
+#include "typedef.h"
+
 const int LUT_SIZE = 2048;
-static const LutOutFixed lut[LUT_SIZE] = {
+static const lutout_fixed_t lut[LUT_SIZE] = {
 	0.500000,
 	0.500977,
 	0.501953,

@@ -1,52 +1,52 @@
-#ifndef __TYPEDEFS_H__
-#define __TYPEDEFS_H__
+#ifndef __TYPEDEF_H__
+#define __TYPEDEF_H__
 
 // dataset information
-const int NUM_FEATURES  = 1024;
-const int NUM_SAMPLES   = 5000;
-const int NUM_TRAINING  = 4500;
-const int NUM_TESTING   = 500;
-const int STEP_SIZE     = 60000; 
-const int NUM_EPOCHS    = 5;
-const int DATA_SET_SIZE = NUM_FEATURES * NUM_SAMPLES;
+constexpr int NUM_FEATURES  = 1024;
+constexpr int NUM_SAMPLES   = 5000;
+constexpr int NUM_TRAINING  = 4500;
+constexpr int NUM_TESTING   = 500;
+constexpr int STEP_SIZE     = 60000; 
+constexpr int NUM_EPOCHS    = 5;
+constexpr int DATA_SET_SIZE = NUM_FEATURES * NUM_SAMPLES;
 
 // datatypes for accelerator
 
 // embedded platforms have less off-chip bandwidth
-#define VFTYPE_WIDTH 64
-#define VDTYPE_WIDTH 64
+constexpr int VFTYPE_WIDTH = 64;
+constexpr int VDTYPE_WIDTH = 64;
+constexpr int VLTYPE_WIDTH = 32;
 
 #include "ap_fixed.h"
 #include "ap_int.h"
 // features / parameters
-#define FTYPE_TWIDTH 32
-#define FTYPE_IWIDTH 13
-typedef ap_fixed<FTYPE_TWIDTH, FTYPE_IWIDTH>    FeatureType;
-typedef ap_uint<VFTYPE_WIDTH>                   VectorFeatureType;
-const unsigned int F_VECTOR_SIZE = VFTYPE_WIDTH / FTYPE_TWIDTH;
+constexpr int FTYPE_TWIDTH = 32;
+constexpr int FTYPE_IWIDTH = 32;
+using feature_t = ap_fixed<FTYPE_TWIDTH, FTYPE_IWIDTH>;
+using vec_feature_t = ap_uint<VFTYPE_WIDTH>;
+constexpr unsigned int F_VECTOR_SIZE = VFTYPE_WIDTH / FTYPE_TWIDTH;
 // training data
-#define DTYPE_TWIDTH 16
-#define DTYPE_IWIDTH 4
-typedef ap_fixed<DTYPE_TWIDTH, DTYPE_IWIDTH>    DataType;
-typedef ap_uint<VDTYPE_WIDTH>                   VectorDataType;
-const unsigned int D_VECTOR_SIZE = VDTYPE_WIDTH / DTYPE_TWIDTH;
+constexpr int DTYPE_TWIDTH = 16;
+constexpr int DTYPE_IWIDTH = 4;
+using data_t = ap_fixed<DTYPE_TWIDTH, DTYPE_IWIDTH>;
+using vec_data_t = ap_uint<VDTYPE_WIDTH>;
+constexpr unsigned int D_VECTOR_SIZE = VDTYPE_WIDTH / DTYPE_TWIDTH;
 // label
-#define LTYPE_WIDTH 8
-#define VLTYPE_WIDTH 32
-typedef ap_uint<LTYPE_WIDTH>                    LabelType;
-typedef ap_uint<VLTYPE_WIDTH>                   VectorLabelType;
-const unsigned int L_VECTOR_SIZE = VLTYPE_WIDTH / LTYPE_WIDTH;
+constexpr int LTYPE_WIDTH = 8;
+using label_t = ap_uint<LTYPE_WIDTH>;
+using vec_label_t = ap_uint<VLTYPE_WIDTH>;
+constexpr unsigned int L_VECTOR_SIZE = VLTYPE_WIDTH / LTYPE_WIDTH;
 
 // datatypes for the LUT
-#define LUTOUT_TWIDTH 12
-#define LUTOUT_IWIDTH 2
-#define LUTIN_TWIDTH 12
-#define LUTIN_IWIDTH 4
-typedef ap_ufixed<32, 20>                       TmpFixed;
-typedef ap_uint<LUTIN_TWIDTH>                   IdxFixed;
-typedef ap_fixed<LUTIN_TWIDTH, LUTIN_IWIDTH>    LutInFixed;
-typedef ap_fixed<LUTOUT_TWIDTH, LUTOUT_IWIDTH>  LutOutFixed;
+constexpr int LUTOUT_TWIDTH = 12;
+constexpr int LUTOUT_IWIDTH = 2;
+constexpr int LUTIN_TWIDTH = 12;
+constexpr int LUTIN_IWIDTH = 4;
+using tmp_fixed_t = ap_ufixed<32, 20>;
+using idx_fixed_t = ap_uint<LUTIN_TWIDTH>;
+using lutin_fixed_t = ap_fixed<LUTIN_TWIDTH, LUTIN_IWIDTH>;
+using lutout_fixed_t = ap_fixed<LUTOUT_TWIDTH, LUTOUT_IWIDTH>;
 
-#define PAR_FACTOR 32
+constexpr int PAR_FACTOR = 32;
 
 #endif
