@@ -7,6 +7,8 @@
 #include "hls_task.h"
 
 #include "sgd.hpp"
+#include "top_in.hpp"
+#include "top_out.hpp"
 
 void top(
     vec_data_t data[NUM_FEATURES * NUM_TRAINING / D_VECTOR_SIZE],

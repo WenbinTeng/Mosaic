@@ -25,14 +25,7 @@ void top(
     hls_thread_local hls::stream<tensor_t> ten_stream("ten_stream");
     hls_thread_local hls::stream<velocity_t> out_stream("out_stream");
 
-    hls_thread_local hls::task t1(
-        top_in_space::top_in, frames,
-        frame1_stream,
-        frame2_stream,
-        frame3_stream_a,
-        frame3_stream_b,
-        frame4_stream,
-        frame5_stream);
+    hls_thread_local hls::task t1(top_in_space::top_in, frames, frame1_stream, frame2_stream, frame3_stream_a, frame3_stream_b, frame4_stream, frame5_stream);
     hls_thread_local hls::task t2(grad_xy_calc_space::grad_xy_calc, frame3_stream_a, grad_x_stream, grad_y_stream);
     hls_thread_local hls::task t3(grad_z_calc_space::grad_z_calc, frame1_stream, frame2_stream, frame3_stream_b, frame4_stream, frame5_stream, grad_z_stream);
     hls_thread_local hls::task t4(grad_wgt_y_space::grad_wgt_y, grad_x_stream, grad_y_stream, grad_z_stream, y_filt_grad_stream);
