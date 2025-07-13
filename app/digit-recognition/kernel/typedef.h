@@ -2,22 +2,22 @@
 #define __TYPEDEF_H__
 
 // dataset information
-#define NUM_TRAINING 18000
-#define CLASS_SIZE 1800
-#define NUM_TEST 2000
-#define DIGIT_WIDTH 4
-#define NUM_LANE 4
+constexpr int NUM_TRAINING = 18000;
+constexpr int CLASS_SIZE = 1800;
+constexpr int NUM_TEST = 2000;
+constexpr int DIGIT_WIDTH = 4;
+constexpr int NUM_LANE = 4;
 
 // typedefs
-typedef unsigned long long DigitType;
-typedef unsigned char      LabelType;
+using digit_t = unsigned long long;
+using label_t = unsigned char;
 
 #include "ap_int.h"
 // sdsoc wide vector type
-typedef ap_uint<256>  WholeDigitType;
+using whole_digit_t = ap_uint<256>
 
 // parameters
-#define K_CONST 3
-#define PAR_FACTOR 10
+constexpr int K_CONST = 3;
+constexpr int PAR_FACTOR = 10;
 
 #endif

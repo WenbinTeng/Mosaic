@@ -1,12 +1,18 @@
 #ifndef __KNN_H__
 #define __KNN_H__
 
-#include "hls_stream.h"
-
 #include "typedef.h"
 
-void digit_rec(WholeDigitType global_training_set[NUM_TRAINING],
-               WholeDigitType global_test_set[NUM_TEST],
-               LabelType global_results[NUM_TEST]);
+#include "hls_stream.h"
+
+namespace knn_space {
+
+void knn(
+    hls::stream<whole_digit_t> &training_stream,
+    hls::stream<label_t> &test_stream,
+    hls::stream<label_t> &result_stream
+);
+
+}  // namespace knn_space
 
 #endif
