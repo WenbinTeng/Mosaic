@@ -2,63 +2,63 @@
 #define __TYPEDEF_H__
 
 // constants
-const int IMAGE_HEIGHT = 240;
-const int IMAGE_WIDTH = 320;
-const int RESULT_SIZE = 100;
-const int IMAGE_MAXGREY = 255;
-const int IMAGE_SIZE = (IMAGE_HEIGHT * IMAGE_WIDTH);
-const int TOTAL_NODES = 2913;
-const int TOTAL_STAGES = 25;
-const int TOTAL_COORDINATES = TOTAL_NODES * 12;
-const int TOTAL_WEIGHTS = TOTAL_NODES * 3;
-const int WINDOW_SIZE = 25;
-const int SQ_SIZE = 2;
-const int PYRAMID_HEIGHT = 12;
-const int ROWS = 25;
-const int COLS = 25;
-const int NUM_BANKS = 12;
-const int SIZE = 2913;
+constexpr int IMAGE_HEIGHT = 240;
+constexpr int IMAGE_WIDTH = 320;
+constexpr int RESULT_SIZE = 100;
+constexpr int IMAGE_MAXGREY = 255;
+constexpr int IMAGE_SIZE = (IMAGE_HEIGHT * IMAGE_WIDTH);
+constexpr int TOTAL_NODES = 2913;
+constexpr int TOTAL_STAGES = 25;
+constexpr int TOTAL_COORDINATES = TOTAL_NODES * 12;
+constexpr int TOTAL_WEIGHTS = TOTAL_NODES * 3;
+constexpr int WINDOW_SIZE = 25;
+constexpr int SQ_SIZE = 2;
+constexpr int PYRAMID_HEIGHT = 12;
+constexpr int ROWS = 25;
+constexpr int COLS = 25;
+constexpr int NUM_BANKS = 12;
+constexpr int SIZE = 2913;
 
 #include "ap_int.h"
 // HLS-specific datatypes
-typedef ap_uint<18> uint18_t;
-typedef ap_uint<10> uint10_t;
-typedef ap_uint<1> bit;
-typedef ap_uint<5> uint5_t;
-typedef ap_uint<13> int_I;
-typedef ap_uint<21> int_SI;
-typedef ap_uint<18> int_II;
-typedef ap_uint<26> int_SII;
-typedef unsigned char data_t;
+using uint18_t = ap_uint<18>;
+using uint10_t = ap_uint<10>;
+using uint5_t = ap_int<5>;
+using bit = ap_uint<1>;
+using int_I = ap_uint<13>;
+using int_SI = ap_uint<21>;
+using int_II = ap_uint<18>;
+using int_SII = ap_uint<26>;
+using data_t = unsigned char;
 
 // standard datatypes
-typedef struct {
+struct point_t {
     int x;
     int y;
-} point_t;
+};
 
-typedef struct {
+struct window_t {
     int width;
     int height;
-} window_t;
+};
 
-typedef struct {
+struct rect_t {
     int x;
     int y;
     int width;
     int height;
-} rect_t;
+};
 
-typedef struct {
+struct result_t {
     rect_t r;
     int result;
-} result_t;
+};
 
-typedef struct {
+struct image_t {
     int width;
     int height;
     int maxgrey;
     int flag;
-} image_t;
+};
 
 #endif
