@@ -1,16 +1,6 @@
-/*===============================================================*/
-/*                                                               */
-/*                      face_detect.cpp                          */
-/*                                                               */
-/*     Hardware function for the Face Detection application.     */
-/*                                                               */
-/*===============================================================*/
+#include "vj.hpp"
 
-#include "face_detect.h"
-
-/****************************************************************************************/
-/* UTILITY FUNCTIONS
-****************************************************************************************/
+namespace vj_space {
 
 #include "haar_mapping.h"
 
@@ -916,13 +906,13 @@ void get_all_data(uint18_t output[12], uint10_t addr_list[12], uint18_t aa[ROWS 
 #pragma HLS array_partition variable = data_from_banks complete dim = 0
 
     COMPUTE_BANK_AND_OFFSET:for (int i = 0; i < 12; i++) {
-#pragma HLS unroll
+#pragma HLS UNROLL
         bank[i] = get_bank(addr_list[i]);
         offset[i] = get_offset(addr_list[i]);
     }
 
     ASSIGN_OFFSET_FOR_BANKS:for (int i = 0; i < 28; i++) {
-#pragma HLS unroll
+#pragma HLS UNROLL
         offset_for_banks[i] =   (bank[0 ] == i) ? offset[0 ]
                               : (bank[1 ] == i) ? offset[1 ]
                               : (bank[2 ] == i) ? offset[2 ]
@@ -969,7 +959,7 @@ READ_ALL_BANKS:
     data_from_banks[27] = get_data27(offset_for_banks[27], aa);
 
     CHOOSE_DATA:for (int i = 0; i < 12; i++) {
-#pragma HLS unroll
+#pragma HLS UNROLL
         output[i] = data_from_banks[bank[i]];
     }
 }
@@ -2704,7 +2694,7 @@ unsigned int my_sqrt(ap_uint<32> value) {
     unsigned int a = 0, b = 0, c = 0;
 
     for (i = 0; i < (32 >> 1); i++) {
-#pragma HLS unroll
+#pragma HLS UNROLL
         c <<= 2;
 #define UPPERBITS(value) (value >> 30)
         c += UPPERBITS(value);
@@ -2846,7 +2836,7 @@ int strong_classifier2(int_II II[WINDOW_SIZE][WINDOW_SIZE], int stddev) {
     return 0;
 }
 
-int cascade_classifier(point_t pt, int_II II[WINDOW_SIZE][WINDOW_SIZE], int_SII SII[SQ_SIZE][SQ_SIZE]) {
+int _cascade_classifier(point_t pt, int_II II[WINDOW_SIZE][WINDOW_SIZE], int_SII SII[SQ_SIZE][SQ_SIZE]) {
 #pragma HLS inline
 
     int mean;
@@ -2873,9 +2863,9 @@ int cascade_classifier(point_t pt, int_II II[WINDOW_SIZE][WINDOW_SIZE], int_SII 
 #pragma HLS array_partition variable = _II complete dim = 0
 
     COPY_LOOP1:for (int i = 0; i < WINDOW_SIZE; i++) {
-#pragma HLS unroll
+#pragma HLS UNROLL
         COPY_LOOP2:for (int j = 0; j < WINDOW_SIZE; j++) {
-#pragma HLS unroll
+#pragma HLS UNROLL
             _II[i * 25 + j] = II[i][j];
         }
     }
@@ -2991,8 +2981,13 @@ int cascade_classifier(point_t pt, int_II II[WINDOW_SIZE][WINDOW_SIZE], int_SII 
     return 1;
 }
 
-void process_image_stream(hls::stream<data_t> &image_stream,
-                          hls::stream<result_t> &result_stream) {
+void vj(
+    hls::stream<data_t> &image_stream,
+    hls::stream<result_t> &result_stream
+) {
+#pragma HLS INTERFACE ap_ctrl_none port=return
+#pragma HLS INTERFACE axis port=image_stream
+#pragma HLS INTERFACE axis port=result_stream
 
     /** Image Line buffer ( 24 BRAMs ) */
     unsigned char L[WINDOW_SIZE - 1][IMAGE_WIDTH];
@@ -3026,39 +3021,38 @@ void process_image_stream(hls::stream<data_t> &image_stream,
     int x_index = 0;
     int y_index = 0;
 
-    INIT_0i:for (int i = 0; i < WINDOW_SIZE; i++) {
-#pragma HLS unroll
-        INIT_0j:for (int j = 0; j < WINDOW_SIZE; j++) {
-#pragma HLS unroll
+    for (int i = 0; i < WINDOW_SIZE; i++) {
+#pragma HLS UNROLL
+        for (int j = 0; j < WINDOW_SIZE; j++) {
+#pragma HLS UNROLL
             II[i][j] = 0;
         }
     }
 
-    INIT_1i:for (int i = 0; i < SQ_SIZE; i++) {
-#pragma HLS unroll
-        INIT_1j:for (int j = 0; j < SQ_SIZE; j++) {
-#pragma HLS unroll
+    for (int i = 0; i < SQ_SIZE; i++) {
+#pragma HLS UNROLL
+        for (int j = 0; j < SQ_SIZE; j++) {
+#pragma HLS UNROLL
             SII[i][j] = 0;
         }
     }
 
-    INIT_2i:for (int i = 0; i < WINDOW_SIZE; i++) {
-#pragma HLS unroll
-        INIT_2j:for (int j = 0; j < 2 * WINDOW_SIZE; j++) {
-#pragma HLS unroll
-             I[i][j] = 0;
+    for (int i = 0; i < WINDOW_SIZE; i++) {
+#pragma HLS UNROLL
+        for (int j = 0; j < 2 * WINDOW_SIZE; j++) {
+#pragma HLS UNROLL
+            I[i][j] = 0;
             SI[i][j] = 0;
         }
     }
 
-    PIXEL_Y:for (int y = 0; y < sum_row; y++) {
-        PIXEL_X:for (int x = 0; x < sum_col; x++) {
-
+    for (int y = 0; y < sum_row; y++) {
+        for (int x = 0; x < sum_col; x++) {
             /* Updates for Integral Image Window Buffer (I) */
-            SET_IIi:for (int i = 0; i < WINDOW_SIZE; i++) {
-#pragma HLS unroll
-                SET_IIj:for (int j = 0; j < WINDOW_SIZE; j++) {
-#pragma HLS unroll
+            for (int i = 0; i < WINDOW_SIZE; i++) {
+#pragma HLS UNROLL
+                for (int j = 0; j < WINDOW_SIZE; j++) {
+#pragma HLS UNROLL
                     II[i][j] = II[i][j] + (I[i][j + 1] - I[i][0]);
                 }
             }
@@ -3070,10 +3064,10 @@ void process_image_stream(hls::stream<data_t> &image_stream,
             SII[1][1] = SII[1][1] + (SI[WINDOW_SIZE - 1][WINDOW_SIZE] - SI[WINDOW_SIZE - 1][0]);
 
             /* Updates for Image Window Buffer (I) and Square Image Window Bufer (SI) */
-            SET_Ij:for (int j = 0; j < 2 * WINDOW_SIZE; j++) {
-#pragma HLS unroll
-                SET_Ii:for (int i = 0; i < WINDOW_SIZE; i++) {
-#pragma HLS unroll
+            for (int j = 0; j < 2 * WINDOW_SIZE; j++) {
+#pragma HLS UNROLL
+                for (int i = 0; i < WINDOW_SIZE; i++) {
+#pragma HLS UNROLL
                     if (i + j != 2 * WINDOW_SIZE - 1) {
                         I[i][j] = I[i][j + 1];
                         SI[i][j] = SI[i][j + 1];
@@ -3087,8 +3081,8 @@ void process_image_stream(hls::stream<data_t> &image_stream,
             data_t image_data = image_stream.read();
 
             /** Last column of the I[][] matrix **/
-            Ilast:for (int i = 0; i < WINDOW_SIZE - 1; i++) {
-#pragma HLS unroll
+            for (int i = 0; i < WINDOW_SIZE - 1; i++) {
+#pragma HLS UNROLL
                 I[i][2 * WINDOW_SIZE - 1] = L[i][x];
                 SI[i][2 * WINDOW_SIZE - 1] = L[i][x] * L[i][x];
             }
@@ -3096,8 +3090,8 @@ void process_image_stream(hls::stream<data_t> &image_stream,
             SI[WINDOW_SIZE - 1][2 * WINDOW_SIZE - 1] = image_data * image_data;
 
             /** Updates for Image Line Buffer (L) **/
-            LineBuf:for (int k = 0; k < WINDOW_SIZE - 2; k++) {
-#pragma HLS unroll
+            for (int k = 0; k < WINDOW_SIZE - 2; k++) {
+#pragma HLS UNROLL
                 L[k][x] = L[k + 1][x];
             }
             L[WINDOW_SIZE - 2][x] = image_data;
@@ -3111,8 +3105,8 @@ void process_image_stream(hls::stream<data_t> &image_stream,
                     p.x = x_index;
                     p.y = y_index;
 
-                    int result = cascade_classifier(p, II, SII);
-                    rect_t r = {my_round(p.x * scale), my_round(p.y * scale), w, h};
+                    int result = _cascade_classifier(p, II, SII);
+                    rect_t r = {_my_round(p.x * scale), _my_round(p.y * scale), w, h};
                     result_stream.write({r, result});
                 } // inner if
                 if (x_index < sum_col - 1)
@@ -3130,102 +3124,4 @@ void process_image_stream(hls::stream<data_t> &image_stream,
     scale *= 1.2;
 }
 
-void image_scalar_stream(hls::stream<data_t> &data_in_stream,
-                         hls::stream<data_t> &data_out_stream) {
-
-    static data_t local_data[IMAGE_HEIGHT][IMAGE_WIDTH];
-
-    static int factor = 0;
-
-    const int height_list[12] = {200, 167, 139, 116, 96, 80, 67, 56, 47, 39, 32, 27};
-    const int width_list[12] = {267, 222, 185, 154, 129, 107, 89, 74, 62, 52, 43, 36};
-    int h1 = IMAGE_HEIGHT;
-    int w1 = IMAGE_WIDTH;
-    int h2 = height_list[factor];
-    int w2 = width_list[factor];
-    int x_ratio = (int)((w1 << 16) / w2) + 1;
-    int y_ratio = (int)((h1 << 16) / h2) + 1;
-
-    LOAD_OUTER:for (int i = 0; i < IMAGE_HEIGHT; i++) {
-        LOAD_INNER:for (int j = 0; j < IMAGE_WIDTH; j++) {
-#pragma HLS pipeline II = 1
-            data_t tmp_data = data_in_stream.read();
-            local_data[i][j] = tmp_data;
-        }
-    }
-
-    SCALE_OUTER:for (int i = 0; i < IMAGE_HEIGHT; i++) {
-        SCALE_INNER:for (int j = 0; j < IMAGE_WIDTH; j++) {
-#pragma HLS pipeline II = 1
-            if (j < w2 && i < h2) {
-                int x = (i * y_ratio) >> 16;
-                int y = (j * x_ratio) >> 16;
-                data_out_stream.write(local_data[x][y]);
-            }
-        }
-    }
-
-    factor++;
-}
-
-void face_detect(unsigned char data[IMAGE_WIDTH],
-                 int result_x[RESULT_SIZE],
-                 int result_y[RESULT_SIZE],
-                 int result_w[RESULT_SIZE],
-                 int result_h[RESULT_SIZE],
-                 int *result_size) {
-#pragma dataflow
-
-    static hls::stream<data_t> image_in_stream;
-    static hls::stream<data_t> image_scale_stream;
-    static hls::stream<result_t> result_stream;
-
-    static int counter = 0;
-    if (counter < IMAGE_HEIGHT) {
-        for (int j = 0; j < IMAGE_WIDTH; j++) {
-#pragma HLS pipeline II = 1
-            data_t tmp_data = data[j];
-            image_in_stream.write(tmp_data);
-        }
-        counter++;
-        if (counter < IMAGE_HEIGHT) {
-            for (int i = 0; i < RESULT_SIZE; i++) {
-                result_x[i] = 0;
-                result_y[i] = 0;
-                result_w[i] = 0;
-                result_h[i] = 0;
-            }
-            *result_size = 0;
-            return;
-        }
-    }
-    counter = 0;
-    *result_size = 0;
-
-    MAIN_LOOP:for (int i = 0; i < 12; i++) {
-        image_scalar_stream(image_in_stream, image_scale_stream);
-        process_image_stream(image_scale_stream, result_stream);
-    }
-
-    static int result_cnt = 0;
-    for (int i = 0; i < RESULT_SIZE; i++) {
-#pragma HLS pipeline
-        result_t res = result_stream.read();
-        rect_t r = res.r;
-        if (res.result > 0) {
-            result_x[result_cnt] = r.x;
-            result_y[result_cnt] = r.y;
-            result_w[result_cnt] = r.width;
-            result_h[result_cnt] = r.height;
-            result_cnt++;
-        }
-    }
-    for (int i = result_cnt; i < RESULT_SIZE; i++) {
-#pragma HLS pipeline
-        result_x[i] = 0;
-        result_y[i] = 0;
-        result_w[i] = 0;
-        result_h[i] = 0;
-    }
-    *result_size = result_cnt;
-}
+}  // namespace vj_space
