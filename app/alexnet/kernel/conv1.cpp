@@ -11,6 +11,14 @@
 
 namespace conv1_space {
 
+inline void _unpack_input(din_t& input, feature_t _input[IN_CH]) {
+#pragma HLS INLINE
+    for (int ic = 0; ic < IN_CH; ic++) {
+#pragma HLS UNROLL
+        _input[ic] = input.range(ic * 8 + 7, ic * 8);
+    }
+}
+
 inline void _pack_output(acc_t _output[PAR], dout_t& output) {
 #pragma HLS INLINE
     for (int p = 0; p < PAR; p++) {
@@ -74,10 +82,8 @@ void conv1(
             feature_t pix_in[IN_CH];
 #pragma HLS ARRAY_PARTITION variable=pix_in type=complete
             if (row < IN_H && col < IN_W) {
-                for (int ic = 0; ic < IN_CH; ic++) {
-#pragma HLS PIPELINE
-                    pix_in[ic] = in_stream.read();
-                }
+                din_t din = in_stream.read();
+                _unpack_input(din, pix_in);
             } else {
                 for (int ic = 0; ic < IN_CH; ic++) {
 #pragma HLS UNROLL
