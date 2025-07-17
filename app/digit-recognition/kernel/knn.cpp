@@ -22,13 +22,13 @@ void _init_knn_set(int knn_set[PAR_FACTOR * K_CONST]) {
 }
 
 // popcount function
-int _popcount(WholeDigitType x) {
+int _popcount(whole_digit_t x) {
 #pragma HLS INLINE
     // most straightforward implementation
     // actually not bad on FPGA
     int cnt = 0;
     for (int i = 0; i < 256; i++)
-#pragma HLS unroll
+#pragma HLS UNROLL
         cnt = cnt + x[i];
 
     return cnt;
@@ -38,14 +38,14 @@ int _popcount(WholeDigitType x) {
 // function maintains/updates an array of K minimum
 // distances per training set.
 void _update_knn(
-    WholeDigitType test_inst,
-    WholeDigitType train_inst,
+    whole_digit_t test_inst,
+    whole_digit_t train_inst,
     int min_distances[K_CONST]
 ) {
 #pragma HLS INLINE
 
     // Compute the difference using XOR
-    WholeDigitType diff = test_inst ^ train_inst;
+    whole_digit_t diff = test_inst ^ train_inst;
 
     int dist = 0;
     dist = popcount(diff);
@@ -79,13 +79,13 @@ label_t _knn_vote(int knn_set[PAR_FACTOR * K_CONST]) {
     // local buffers
     // final K nearest neighbors
     int min_distance_list[K_CONST];
-#pragma HLS array_partition variable=min_distance_list complete dim=0
+#pragma HLS ARRAY_PARTITION variable=min_distance_list complete dim=0
     // labels for the K nearest neighbors
     int label_list[K_CONST];
-#pragma HLS array_partition variable=label_list complete dim=0
+#pragma HLS ARRAY_PARTITION variable=label_list complete dim=0
     // voting boxes
     int vote_list[10];
-#pragma HLS array_partition variable=vote_list complete dim=0
+#pragma HLS ARRAY_PARTITION variable=vote_list complete dim=0
 
     int pos = 1000;
 
@@ -96,7 +96,7 @@ label_t _knn_vote(int knn_set[PAR_FACTOR * K_CONST]) {
         label_list[i] = 9;
     }
     for (int i = 0; i < 10; i++) {
-#pragma HLS unroll
+#pragma HLS UNROLL
         vote_list[i] = 0;
     }
 
@@ -125,14 +125,14 @@ label_t _knn_vote(int knn_set[PAR_FACTOR * K_CONST]) {
 
     // vote
     for (int i = 0; i < K_CONST; i++) {
-#pragma HLS pipeline
+#pragma HLS PIPELINE
         vote_list[label_list[i]] += 1;
     }
 
     // find the maximum value
     label_t max_vote = 0;
     for (int i = 0; i < 10; i++) {
-#pragma HLS unroll
+#pragma HLS UNROLL
         if (vote_list[i] >= vote_list[max_vote]) {
             max_vote = i;
         }
