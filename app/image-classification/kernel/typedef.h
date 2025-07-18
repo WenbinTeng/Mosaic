@@ -1,37 +1,34 @@
 #ifndef __TYPEDEF_H__
 #define __TYPEDEF_H__
 
-#define MEM_ALLOC(size) malloc(size)
-#define MEM_FREE(ptr) free(ptr)
+constexpr unsigned CONVOLVERS = 2;
 
-const unsigned CONVOLVERS = 2;
+constexpr unsigned WORD_SIZE = 64;
+constexpr unsigned WT_SIZE = 9;
+constexpr unsigned CONV_W_PER_WORD = 7;
+constexpr unsigned CONV1_W_PER_WORD = 4;
+constexpr unsigned KH_PER_WORD = 4;
+constexpr unsigned BYTE_SIZE = 8;
+constexpr unsigned K = 3;
+constexpr unsigned WT_L = 16 * 4 * 512;  // parameter to control wt mem size
+constexpr unsigned C_WT_WORDS = ((WT_L + CONV_W_PER_WORD - 1) / CONV_W_PER_WORD + CONVOLVERS - 1) / CONVOLVERS;  // wt words per convolver
+constexpr unsigned WT_WORDS = C_WT_WORDS * CONVOLVERS;
+constexpr unsigned KH_WORDS = WT_L / 128 * 16 / WORD_SIZE;
 
-const unsigned WORD_SIZE = 64;
-const unsigned WT_SIZE = 9;
-const unsigned CONV_W_PER_WORD = 7;
-const unsigned CONV1_W_PER_WORD = 4;
-const unsigned KH_PER_WORD = 4;
-const unsigned BYTE_SIZE = 8;
-const unsigned K = 3;
-const unsigned WT_L = 16 * 4 * 512;  // parameter to control wt mem size
-const unsigned C_WT_WORDS = ((WT_L + CONV_W_PER_WORD - 1) / CONV_W_PER_WORD + CONVOLVERS - 1) / CONVOLVERS;  // wt words per convolver
-const unsigned WT_WORDS = C_WT_WORDS * CONVOLVERS;
-const unsigned KH_WORDS = WT_L / 128 * 16 / WORD_SIZE;
+constexpr unsigned DMEM_WORDS = 128 * 32 * 32 / WORD_SIZE;
+constexpr unsigned C_DMEM_WORDS = DMEM_WORDS / CONVOLVERS;
+constexpr unsigned DMEM_O_WORDS = 512 * 4 * 4 / WORD_SIZE;
+constexpr unsigned DB_MEM_WORDS = 32 * 32;
 
-const unsigned DMEM_WORDS = 128 * 32 * 32 / WORD_SIZE;
-const unsigned C_DMEM_WORDS = DMEM_WORDS / CONVOLVERS;
-const unsigned DMEM_O_WORDS = 512 * 4 * 4 / WORD_SIZE;
-const unsigned DB_MEM_WORDS = 32 * 32;
+constexpr unsigned PIX_PER_PHASE = 2 * 32 * 32;
 
-const unsigned PIX_PER_PHASE = 2 * 32 * 32;
+constexpr unsigned MAX_WIDTH = WORD_SIZE;
+constexpr unsigned BANK_WIDTH = 8;
+constexpr unsigned LOG_BANK_WIDTH = 3;
 
-const unsigned MAX_WIDTH = WORD_SIZE;
-const unsigned BANK_WIDTH = 8;
-const unsigned LOG_BANK_WIDTH = 3;
-
-const unsigned CONV_ROWS = 3;
-const unsigned CONV_COLS = BANK_WIDTH + 2;
-const unsigned CONV_BANKS = WORD_SIZE / BANK_WIDTH;
+constexpr unsigned CONV_ROWS = 3;
+constexpr unsigned CONV_COLS = BANK_WIDTH + 2;
+constexpr unsigned CONV_BANKS = WORD_SIZE / BANK_WIDTH;
 
 enum LayerTypeEnum { LAYER_CONV1, LAYER_CONV, LAYER_DENSE, LAYER_LAST };
 
