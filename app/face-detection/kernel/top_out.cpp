@@ -12,7 +12,6 @@ void top_out(
 ) {
 #pragma HLS INTERFACE ap_ctrl_none port=return
 #pragma HLS INTERFACE axis port=result_stream
-#pragma HLS INTERFACE m_axi depth=IMAGE_WIDTH port=data offset=slave bundle=data
 #pragma HLS INTERFACE m_axi depth=RESULT_SIZE port=result_x offset=slave bundle=data
 #pragma HLS INTERFACE m_axi depth=RESULT_SIZE port=result_y offset=slave bundle=data
 #pragma HLS INTERFACE m_axi depth=RESULT_SIZE port=result_w offset=slave bundle=data

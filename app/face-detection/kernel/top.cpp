@@ -1,6 +1,6 @@
 #include "top.hpp"
 
-void face_detect_kernel_0(
+void top(
     unsigned char data[IMAGE_WIDTH],
     int result_x[RESULT_SIZE],
     int result_y[RESULT_SIZE],

@@ -2685,11 +2685,11 @@ int classifier51(int_II II[WINDOW_SIZE][WINDOW_SIZE], int stddev) {
 // TOP LEVEL FUNCTIONS OR DUT (DEVICE UNDER TEST) 
 //========================================================================================
 
-inline int my_round(float value) {
+inline int _my_round(float value) {
     return (int)(value + (value >= 0 ? 0.5 : -0.5));
 }
 
-unsigned int my_sqrt(ap_uint<32> value) {
+unsigned int _my_sqrt(ap_uint<32> value) {
     int i;
     unsigned int a = 0, b = 0, c = 0;
 
@@ -2876,7 +2876,7 @@ int _cascade_classifier(point_t pt, int_II II[WINDOW_SIZE][WINDOW_SIZE], int_SII
     stddev = stddev - mean * mean;
 
     if (stddev > 0)
-        stddev = my_sqrt(stddev);
+        stddev = _my_sqrt(stddev);
     else
         stddev = 1;
 
