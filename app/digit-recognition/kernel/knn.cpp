@@ -3,7 +3,7 @@
 namespace knn_space {
 
 void _init_training_set(
-    hls::stream<digit_t> &training_stream, 
+    hls::stream<whole_digit_t> &training_stream, 
     whole_digit_t local_training_set[NUM_TRAINING]
 ) {
 #pragma HLS INLINE
@@ -48,7 +48,7 @@ void _update_knn(
     whole_digit_t diff = test_inst ^ train_inst;
 
     int dist = 0;
-    dist = popcount(diff);
+    dist = _popcount(diff);
 
     int max_dist = 0;
     int max_dist_id = K_CONST + 1;
@@ -143,7 +143,7 @@ label_t _knn_vote(int knn_set[PAR_FACTOR * K_CONST]) {
 
 void knn(
     hls::stream<whole_digit_t> &training_stream,
-    hls::stream<label_t> &test_stream,
+    hls::stream<whole_digit_t> &test_stream,
     hls::stream<label_t> &result_stream
 ) {
 #pragma HLS INTERFACE ap_ctrl_none port=return
@@ -161,17 +161,17 @@ void knn(
 #pragma HLS ARRAY_PARTITION variable=knn_set complete dim=0
 
     for (int i = 0; i < NUM_TEST; i++) {
-        label_t test_inst = test_stream.read();
-        _init_knn(knn_set);
+        whole_digit_t test_inst = test_stream.read();
+        _init_knn_set(knn_set);
         for (int j = 0; j < NUM_TRAINING; j++) {
 #pragma HLS PIPELINE
             for (int k = 0; k < PAR_FACTOR; k++) {
 #pragma HLS UNROLL
                 whole_digit_t training_inst = local_training_set[j * NUM_TRAINING / PAR_FACTOR + i];
-                _update_knn(test_inst, training_test, &knn_set[k * K_CONST]);
+                _update_knn(test_inst, training_inst, &knn_set[k * K_CONST]);
             }
         }
-        label_t max_vote = knn_vote(knn_set);
+        label_t max_vote = _knn_vote(knn_set);
         result_stream.write(max_vote);
     }
 }

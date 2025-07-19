@@ -9,7 +9,7 @@ namespace knn_space {
 
 void knn(
     hls::stream<whole_digit_t> &training_stream,
-    hls::stream<label_t> &test_stream,
+    hls::stream<whole_digit_t> &test_stream,
     hls::stream<label_t> &result_stream
 );
 

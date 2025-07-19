@@ -14,7 +14,7 @@ using label_t = unsigned char;
 
 #include "ap_int.h"
 // sdsoc wide vector type
-using whole_digit_t = ap_uint<256>
+using whole_digit_t = ap_uint<256>;
 
 // parameters
 constexpr int K_CONST = 3;
