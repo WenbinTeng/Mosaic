@@ -1,6 +1,8 @@
 #ifndef __FP_CONV_H__
 #define __FP_CONV_H__
 
+#include <cmath>
+
 #include "typedef.h"
 
 #include "hls_stream.h"

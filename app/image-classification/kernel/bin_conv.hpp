@@ -1,6 +1,8 @@
 #ifndef __BIN_CONV_H__
 #define __BIN_CONV_H__
 
+#include <cmath>
+
 #include "typedef.h"
 
 #include "hls_stream.h"

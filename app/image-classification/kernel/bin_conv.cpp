@@ -18,16 +18,23 @@ inline void _pack_output(acc_t _output[PAR], dout_t& output) {
     }
 }
 
-inline void _init_weight(weight_t weight[OUT_CH][IN_CH][K][K]) {
+inline void _init_weight(word_t weight[OUT_CH][IN_PACKS][K][K]) {
 #pragma HLS INLINE
     for (int oc = 0; oc < OUT_CH; oc++) {
-        for (int ic = 0; ic < IN_CH; ic++) {
+        for (int ic = 0; ic < IN_PACKS; ic++) {
             for (int i = 0; i < K; i++) {
                 for (int j = 0; j < K; j++) {
-                    weight[oc][ic][i][j] = 256 * std::sin(oc * ic * i * j);
+                    weight[oc][ic][i][j] = 4294967296 * std::sin(oc * ic * i * j);
                 }
             }
         }
+    }
+}
+
+inline void _init_bias(acc_t bias[OUT_CH]) {
+#pragma HLS INLINE
+    for (int oc = 0; oc < OUT_CH; oc++) {
+        bias[oc] = 4294967296 * std::sin(oc);
     }
 }
 
@@ -65,10 +72,15 @@ void bin_conv(
 #pragma HLS BIND_STORAGE variable=weight type=rom_1p impl=auto
     _init_weight(weight);
 
+    acc_t bias[OUT_CH];
+#pragma HLS BIND_STORAGE variable=bias type=rom_1p impl=auto
+    _init_bias(bias);
+
     acc_t th_table[OUT_CH];
+#pragma HLS BIND_STORAGE variable=th_table type=rom_1p impl=auto
     _init_threshold(th_table);
 
-    bin_word_t line_buff[K-1][IMG_W];
+    word_t line_buff[K-1][IMG_W];
 #pragma HLS ARRAY_PARTITION variable=line_buff complete dim=1
 
     for (int oh = 0; oh < OUT_H; oh++) {
@@ -84,21 +96,20 @@ void bin_conv(
             if (oh >= P && ow >= P) {
                 word_t out_bits = 0;
                 for (int oc = 0; oc < OUT_CH; oc++) {
-#pragma HLS UNROLL factor=32
-                    acc_t acc = 0;
+#pragma HLS UNROLL factor=WORD_LEN
+                    acc_t acc = bias[oc];
                     for (int ky = 0; ky < K; ky++) {
-                        int col_base = ow - PAD;
                         word_t pix_word;
                         for (int kx = 0; kx < K; kx++) {
-                            int col = col_base + kx;
+                            int col = ow - P + kx;
                             if (ky == K - 1) {
                                 pix_word = (col >= 0 && col < IMG_W) ? line_buff[0][col] : 0;
                             } else {
                                 pix_word = (col >= 0 && col < IMG_W) ? line_buff[ky][col] : 0;
                             }
-                            word_t w = wt[oc][ky][kx];
+                            word_t w = weight[oc][ky][kx];
                             word_t xnor = ~(pix_word ^ w);
-                            acc += _pop_count(xnor);
+                            acc += _popcount(xnor);
                         }
                     }
                     bool bit = _bn_sign(acc);
