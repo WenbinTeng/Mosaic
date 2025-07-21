@@ -37,7 +37,7 @@ void top_in(
     for (int c = 0; c < IMG_CH; c++) {
         for (int i = 0; i < IMG_H; i++) {
             for (int j = 0; j < IMG_W; j++) {
-                feature_t pixel = img[i][j];
+                feature_t pixel = img[c][i][j];
                 img_stream.write(pixel);
             }
         }
