@@ -1,20 +1,20 @@
 #ifndef __TOP_H__
 #define __TOP_H__
 
-#include "bnn.hpp"
+#include "typedef.h"
 
-int image_cls_kernel_0(Word wt_i[WT_WORDS],
-                       Word kh_i[KH_WORDS],
-                       Word dmem_i[DMEM_WORDS],
-                       Word dmem_o[DMEM_O_WORDS],
-                       const Address n_inputs,
-                       const Address n_outputs,
-                       const Address input_words,
-                       const Address output_words,
-                       const ap_uint<3> layer_mode,  // [0]='new layer', [2:1]='conv1,conv,dense,last'
-                       const ap_uint<1> dmem_mode,   // 0 means dmem[0] is input
-                       const ap_uint<2> width_mode,  // 0=8'b, 1=16'b, 2=32'b
-                       const ap_uint<2> norm_mode    // 0='do nothing', 1='do norm', 2='do pool'
+#include "hls_stream.h"
+#include "hls_task.h"
+
+#include "top_in.hpp"
+#include "fp_conv.hpp"
+#include "bin_conv.hpp"
+#include "bin_dense.hpp"
+#include "top_out.hpp"
+
+void top(
+    top_in_space::feature_t img[top_in_space::IMG_CH][top_in_space::IMG_H][top_in_space::IMG_W],
+    top_out_space::feature_t res[top_out_space::OUT_CLASS]
 );
 
 #endif

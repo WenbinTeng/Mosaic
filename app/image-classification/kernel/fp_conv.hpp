@@ -24,7 +24,7 @@ using feature_t = ap_int<16, 4>;  // feature map type
 using weight_t = ap_int<16, 4>;   // weight type
 using acc_t = ap_int<32>;         // accumulation type
 using threshold_t = feature_t;    // threshold type
-using din_t = ap_int<16>;         // data input type
+using din_t = ap_int<16, 4>;      // data input type
 using dout_t = ap_int<PAR>;       // data output type
 
 void fp_conv(
