@@ -31,10 +31,11 @@ inline void _init_bias(bias_t bias[OUT_CH]) {
     }
 }
 
-inline void _bn_sign(acc_t acc, int ch) -> bool {
+inline void _init_threshold(threshold_t th_table[OUT_CH]) {
 #pragma HLS INLINE
-    threshold_t th_table[OUT_CH];
-    return acc >= th_table[ch];
+    for (int oc = 0; oc < OUT_CH; oc++) {
+        th_table[oc] = 256 * std::sin(oc);
+    }
 }
 
 void fp_conv(
@@ -53,6 +54,10 @@ void fp_conv(
 #pragma HLS BIND_STORAGE variable=bias type=rom_1p impl=auto
     _init_bias(bias);
 
+    threshold_t th_table[OUT_CH];
+#pragma HLS ARRAY_PARTITION variable=th_table complete dim=0
+    _init_threshold(th_table);
+
     feature_t line_buffer[IN_CH][K-1][IN_W];
 #pragma HLS ARRAY_PARTITION variable=line_buffer complete dim=1
 
@@ -65,17 +70,17 @@ void fp_conv(
 #pragma HLS UNROLL
                     line_buffer[ic][row][ow] = line_buffer[ic][row-1][ow];
                 }
-                din_t new_pix = in_strm.read();
+                din_t new_pix = in_stream.read();
                 line_buffer[ic][0][ow] = new_pix;
             }
 
-            if (oh >= PAD && ow >= PAD) {
+            if (oh >= P && ow >= P) {
                 acc_t out_pack[PAR];
 #pragma HLS ARRAY_PARTITION variable=out_pack complete dim=0
 
                 for (int p = 0; p < PAR; ++p) {
 #pragma HLS UNROLL
-                        out_pack[p] = bias[(ow * OUT_CH + oh * OUT_CH * IMG_W + p) % OUT_CH];
+                        out_pack[p] = bias[(ow * OUT_CH + oh * OUT_CH * IN_W + p) % OUT_CH];
                 }
 
                 for (int ic = 0; ic < IN_CH; ic++) {
@@ -84,8 +89,8 @@ void fp_conv(
 #pragma HLS PIPELINE II=1 rewind
                             feature_t pix_val;
                             int win_row = ky == K - 1 ? 0 : ky;
-                            int win_col = ow + kx - PAD;
-                            if (win_col < 0 || win_col >= IMG_W)
+                            int win_col = ow + kx - P;
+                            if (win_col < 0 || win_col >= IN_W)
                                 pix_val = 0;
                             else if (ky == K-1)
                                 pix_val = line_buffer[ic][ky-1][win_col];
@@ -95,7 +100,7 @@ void fp_conv(
                             for (int p = 0; p < PAR; ++p) {
 #pragma HLS UNROLL
                                 int oc = ((ow * OUT_CH + p) % OUT_CH) + (oh % (OUT_CH / PAR)) * PAR;
-                                feature_t w = wt[oc][ic][ky][kx];
+                                feature_t w = weight[oc][ic][ky][kx];
                                 out_pack[p] += pix_val * w;
                             }
                         }
@@ -104,8 +109,10 @@ void fp_conv(
 
                 for (int p = 0; p < PAR; p++) {
 #pragma HLS UNROLL
-                    out_stream.write(_bn_sign(out_pack[p]));
+                    int oc = ((ow * OUT_CH + p) % OUT_CH) + (oh % (OUT_CH / PAR)) * PAR;
+                    out_stream.write(out_pack[p] >= th_table[oc]);
                 }
+            }
         }
     }
 }

@@ -11,7 +11,7 @@ constexpr int IMG_CH = 3;
 constexpr int IMG_H = 32;
 constexpr int IMG_W = 32;
 
-using feature_t = ap_int<16, 4>;
+using feature_t = ap_fixed<16, 4>;
 
 void top_in(
     feature_t img[IMG_CH][IMG_H][IMG_W],

@@ -9,7 +9,7 @@ namespace top_out_space {
 
 constexpr int OUT_CLASS = 10; // output number
 
-using feature_t = ap_int<16, 4>;
+using feature_t = ap_int<32>;
 
 void top_out(
     hls::stream<feature_t>& res_stream,

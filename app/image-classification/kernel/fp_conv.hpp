@@ -20,12 +20,13 @@ constexpr int OUT_H = (IN_H - K + 2 * P) / S + 1;  // output height
 constexpr int OUT_W = (IN_W - K + 2 * P) / S + 1;  // output width
 constexpr int PAR = 32;                            // parallel factor
 
-using feature_t = ap_int<16, 4>;  // feature map type
-using weight_t = ap_int<16, 4>;   // weight type
-using acc_t = ap_int<32>;         // accumulation type
-using threshold_t = feature_t;    // threshold type
-using din_t = ap_int<16, 4>;      // data input type
-using dout_t = ap_int<PAR>;       // data output type
+using feature_t = ap_fixed<16, 4>;  // feature map type
+using weight_t = ap_fixed<16, 4>;   // weight type
+using bias_t = ap_int<32>;          // bias type
+using acc_t = ap_int<32>;           // accumulation type
+using threshold_t = acc_t;          // threshold type
+using din_t = ap_fixed<16, 4>;      // data input type
+using dout_t = ap_int<PAR>;         // data output type
 
 void fp_conv(
     hls::stream<din_t> &in_stream,

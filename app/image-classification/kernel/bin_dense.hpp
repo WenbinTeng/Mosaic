@@ -13,10 +13,10 @@ constexpr int WORD_LEN = 32;   // word length
 constexpr int IN_SIZE = 128;   // input size
 constexpr int OUT_CLASS = 10;  // output class
 
-using word_t = ap_int<WORD_LEN>; // word type
-using acc_t = ap_int<32>;
+using word_t = ap_int<WORD_LEN>;  // word type
+using acc_t = ap_int<32>;         // accumulate type
 using din_t = ap_int<WORD_LEN>;   // data input type
-using dout_t = ap_int<WORD_LEN>;  // data output type
+using dout_t = acc_t;             // data output type
 
 void bin_dense(
     hls::stream<din_t> &in_stream,

@@ -24,6 +24,7 @@ constexpr int OUT_PACKS = OUT_CH / WORD_LEN;       // output packages
 
 using word_t = ap_int<WORD_LEN>;  // word type
 using acc_t = ap_int<32>;         // accumulation type
+using threshold_t = acc_t;        // threshold type
 using din_t = ap_int<WORD_LEN>;   // data input type
 using dout_t = ap_int<WORD_LEN>;  // data output type
 

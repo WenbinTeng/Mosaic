@@ -8,11 +8,14 @@ void top(
 #pragma HLS INTERFACE m_axi port=img offset=slave bundle=data
 #pragma HLS INTERFACE m_axi port=res offset=slave bundle=data
 
-    hls_thread_local hls::stream<top_in_space::feature_t> in_stream("in_stream");
-    hls_thread_local hls::stream<fp_conv_space::feature_t> fp_conv_out_stream("fp_conv_out_stream");
-    hls_thread_local hls::stream<bin_conv_space::feature_t> bin_conv_out_stream1("bin_conv_out_stream1");
-    hls_thread_local hls::stream<bin_conv_space::feature_t> bin_conv_out_stream2("bin_conv_out_stream2");
-    hls_thread_local hls::stream<bin_dense_space::feature_t> bin_dense_out_stream("bin_dense_out_stream");
+    using feature_t = ap_fixed<16, 4>;
+    using word_t = ap_int<32>;
+
+    hls_thread_local hls::stream<feature_t> in_stream("in_stream");
+    hls_thread_local hls::stream<word_t> fp_conv_out_stream("fp_conv_out_stream");
+    hls_thread_local hls::stream<word_t> bin_conv_out_stream1("bin_conv_out_stream1");
+    hls_thread_local hls::stream<word_t> bin_conv_out_stream2("bin_conv_out_stream2");
+    hls_thread_local hls::stream<word_t> bin_dense_out_stream("bin_dense_out_stream");
 
     hls_thread_local hls::task t1(top_in_space::top_in, img, in_stream);
     hls_thread_local hls::task t2(fp_conv_space::fp_conv, in_stream, fp_conv_out_stream);
