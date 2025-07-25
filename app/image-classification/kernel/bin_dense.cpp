@@ -6,7 +6,7 @@ inline void _init_weight(word_t weight[OUT_CLASS][IN_SIZE / WORD_LEN]) {
 #pragma HLS INLINE
     for (int i = 0; i < OUT_CLASS; i++) {
         for (int j = 0; j < IN_SIZE / WORD_LEN; j++) {
-            weight[i][j] = 4294967296 * std::sin(i * j);
+            weight[i][j] = (word_t)INT32_MAX * std::sin(i * j);
         }
     }
 }
@@ -14,7 +14,7 @@ inline void _init_weight(word_t weight[OUT_CLASS][IN_SIZE / WORD_LEN]) {
 inline void _init_bias(acc_t bias[OUT_CLASS]) {
 #pragma HLS INLINE
     for (int i = 0; i < OUT_CLASS; i++) {
-        bias[i] = 4294967296 * std::sin(i);
+        bias[i] = (word_t)INT32_MAX * std::sin(i);
     }
 }
 
@@ -36,11 +36,11 @@ void bin_dense(
 #pragma HLS INTERFACE axis port=out_stream
 
     word_t weight[OUT_CLASS][IN_SIZE / WORD_LEN];
-#pragma HLS BIND_STORAGE variable=weight type=rom_1p impl=auto
+// #pragma HLS BIND_STORAGE variable=weight type=rom_1p impl=auto
     _init_weight(weight);
 
     acc_t bias[OUT_CLASS];
-#pragma HLS BIND_STORAGE variable=bias type=rom_1p impl=auto
+// #pragma HLS BIND_STORAGE variable=bias type=rom_1p impl=auto
     _init_bias(bias);
 
     for (int oc = 0; oc < OUT_CLASS; oc++) {
@@ -54,7 +54,6 @@ void bin_dense(
         }
         out_stream.write(acc);
     }
-
 }
 
 }  // namespace bin_dense_space

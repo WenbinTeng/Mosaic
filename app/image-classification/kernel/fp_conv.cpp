@@ -47,19 +47,19 @@ void fp_conv(
 #pragma HLS INTERFACE axis port=out_stream
 
     weight_t weight[OUT_CH][IN_CH][K][K];
-#pragma HLS BIND_STORAGE variable=weight type=rom_1p impl=auto
-    _init_weight(weight);
+// #pragma HLS BIND_STORAGE variable=weight type=rom_1p impl=auto
+#pragma HLS ARRAY_PARTITION variable=weight type=complete dim=1
 
     bias_t bias[OUT_CH];
-#pragma HLS BIND_STORAGE variable=bias type=rom_1p impl=auto
+// #pragma HLS BIND_STORAGE variable=bias type=rom_1p impl=auto
     _init_bias(bias);
 
     threshold_t th_table[OUT_CH];
-#pragma HLS ARRAY_PARTITION variable=th_table complete dim=0
+#pragma HLS ARRAY_PARTITION variable=th_table type=complete dim=0
     _init_threshold(th_table);
 
     feature_t line_buffer[IN_CH][K-1][IN_W];
-#pragma HLS ARRAY_PARTITION variable=line_buffer complete dim=1
+#pragma HLS ARRAY_PARTITION variable=line_buffer type=complete dim=1
 
     for (int oh = 0; oh < OUT_H; oh++) {
         for (int ow = 0; ow < OUT_W; ow++) {
@@ -80,13 +80,13 @@ void fp_conv(
 
                 for (int p = 0; p < PAR; ++p) {
 #pragma HLS UNROLL
-                        out_pack[p] = bias[(ow * OUT_CH + oh * OUT_CH * IN_W + p) % OUT_CH];
+                    out_pack[p] = bias[(ow * OUT_CH + oh * OUT_CH * IN_W + p) % OUT_CH];
                 }
 
                 for (int ic = 0; ic < IN_CH; ic++) {
                     for (int ky = 0; ky < K; ky++) {
                         for (int kx = 0; kx < K; kx++) {
-#pragma HLS PIPELINE II=1 rewind
+#pragma HLS PIPELINE
                             feature_t pix_val;
                             int win_row = ky == K - 1 ? 0 : ky;
                             int win_col = ow + kx - P;

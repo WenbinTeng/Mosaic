@@ -9,7 +9,7 @@
 
 namespace bin_conv_space {
 
-constexpr int WORD_LEN = 32;                       // word length
+constexpr int WORD_LEN = 16;                       // word length
 constexpr int IN_CH = 128;                         // input channel
 constexpr int IN_H = 32;                           // input height
 constexpr int IN_W = 32;                           // input width

@@ -9,7 +9,7 @@
 
 namespace bin_dense_space {
 
-constexpr int WORD_LEN = 32;   // word length
+constexpr int WORD_LEN = 16;   // word length
 constexpr int IN_SIZE = 128;   // input size
 constexpr int OUT_CLASS = 10;  // output class
 

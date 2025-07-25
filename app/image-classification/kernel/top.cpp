@@ -9,13 +9,14 @@ void top(
 #pragma HLS INTERFACE m_axi port=res offset=slave bundle=data
 
     using feature_t = ap_fixed<16, 4>;
-    using word_t = ap_int<32>;
+    using word_t = ap_int<16>;
+    using res_t = ap_int<32>;
 
     hls_thread_local hls::stream<feature_t> in_stream("in_stream");
     hls_thread_local hls::stream<word_t> fp_conv_out_stream("fp_conv_out_stream");
     hls_thread_local hls::stream<word_t> bin_conv_out_stream1("bin_conv_out_stream1");
     hls_thread_local hls::stream<word_t> bin_conv_out_stream2("bin_conv_out_stream2");
-    hls_thread_local hls::stream<word_t> bin_dense_out_stream("bin_dense_out_stream");
+    hls_thread_local hls::stream<res_t> bin_dense_out_stream("bin_dense_out_stream");
 
     hls_thread_local hls::task t1(top_in_space::top_in, img, in_stream);
     hls_thread_local hls::task t2(fp_conv_space::fp_conv, in_stream, fp_conv_out_stream);

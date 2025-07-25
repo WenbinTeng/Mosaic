@@ -18,23 +18,14 @@ inline void _pack_output(acc_t _output[OUT_PACKS], dout_t& output) {
     }
 }
 
-inline void _init_weight(word_t weight[OUT_CH][IN_PACKS][K][K]) {
+inline void _init_weight(word_t weight[OUT_CH][K][K]) {
 #pragma HLS INLINE
     for (int oc = 0; oc < OUT_CH; oc++) {
-        for (int ic = 0; ic < IN_PACKS; ic++) {
-            for (int i = 0; i < K; i++) {
-                for (int j = 0; j < K; j++) {
-                    weight[oc][ic][i][j] = 4294967296 * std::sin(oc * ic * i * j);
-                }
+        for (int i = 0; i < K; i++) {
+            for (int j = 0; j < K; j++) {
+                weight[oc][i][j] = (word_t)INT32_MAX * std::sin(oc * i * j);
             }
         }
-    }
-}
-
-inline void _init_bias(acc_t bias[OUT_CH]) {
-#pragma HLS INLINE
-    for (int oc = 0; oc < OUT_CH; oc++) {
-        bias[oc] = 4294967296 * std::sin(oc);
     }
 }
 
@@ -62,13 +53,10 @@ void bin_conv(
 #pragma HLS INTERFACE axis port=in_stream
 #pragma HLS INTERFACE axis port=out_stream
 
-    word_t weight[OUT_CH][IN_PACKS][K][K];
-#pragma HLS BIND_STORAGE variable=weight type=rom_1p impl=auto
+    word_t weight[OUT_CH][K][K];
+// #pragma HLS BIND_STORAGE variable=weight type=rom_1p impl=auto
+#pragma HLS ARRAY_PARTITION variable=weight type=complete dim=1
     _init_weight(weight);
-
-    acc_t bias[OUT_CH];
-#pragma HLS BIND_STORAGE variable=bias type=rom_1p impl=auto
-    _init_bias(bias);
 
     threshold_t th_table[OUT_CH];
 #pragma HLS ARRAY_PARTITION variable=th_table complete dim=0
@@ -79,7 +67,7 @@ void bin_conv(
 
     for (int oh = 0; oh < OUT_H; oh++) {
         for (int ow = 0; ow < OUT_W; ow++) {
-
+            
             for (int r = K - 2; r > 0; r--) {
 #pragma HLS UNROLL
                 line_buff[r][ow] = line_buff[r-1][ow];
@@ -87,30 +75,31 @@ void bin_conv(
             line_buff[0][ow] = in_stream.read();
             
             if (oh >= P && ow >= P) {
-                word_t out_bits = 0;
-                for (int oc = 0; oc < OUT_CH; oc++) {
-#pragma HLS UNROLL factor=WORD_LEN
-                    acc_t acc = bias[oc];
-                    for (int ky = 0; ky < K; ky++) {
-                        word_t pix_word;
-                        for (int kx = 0; kx < K; kx++) {
-                            int col = ow - P + kx;
-                            if (ky == K - 1) {
-                                pix_word = (col >= 0 && col < IN_W) ? line_buff[0][col] : (word_t)0;
-                            } else {
-                                pix_word = (col >= 0 && col < IN_W) ? line_buff[ky][col] : (word_t)0;
+                for (int ocbase = 0; ocbase < OUT_CH; ocbase += WORD_LEN) {
+                    word_t out_bits = 0;
+                    for (int ocp = 0; ocp < WORD_LEN; ocp++) {
+#pragma HLS UNROLL
+                        acc_t acc = 0;
+                        for (int ky = 0; ky < K; ky++) {
+#pragma HLS UNROLL
+                            word_t pix_word;
+                            for (int kx = 0; kx < K; kx++) {
+#pragma HLS UNROLL
+                                int col = ow - P + kx;
+                                if (ky == K - 1) {
+                                    pix_word = (col >= 0 && col < IN_W) ? line_buff[0][col] : (word_t)0;
+                                } else {
+                                    pix_word = (col >= 0 && col < IN_W) ? line_buff[ky][col] : (word_t)0;
+                                }
+                                word_t w = weight[ocbase + ocp][ky][kx];
+                                word_t xnor = ~(pix_word ^ w);
+                                acc += _popcount(xnor);
                             }
-                            word_t w = weight[oc][ky][kx];
-                            word_t xnor = ~(pix_word ^ w);
-                            acc += _popcount(xnor);
                         }
+                        bool bit = (acc >= th_table[ocbase + ocp]);
+                        out_bits[ocp] = bit;
                     }
-                    bool bit = (acc >= th_table[oc]);
-                    out_bits[oc % WORD_LEN] = bit;
-                    if (oc % WORD_LEN == WORD_LEN - 1) {
-                        out_stream.write(out_bits);
-                        out_bits = 0;
-                    }
+                    out_stream.write(out_bits);
                 }
             }
         }

@@ -18,7 +18,7 @@ constexpr int P = 1;                               // padding size
 constexpr int OUT_CH = 128;                        // output channel
 constexpr int OUT_H = (IN_H - K + 2 * P) / S + 1;  // output height
 constexpr int OUT_W = (IN_W - K + 2 * P) / S + 1;  // output width
-constexpr int PAR = 32;                            // parallel factor
+constexpr int PAR = 16;                            // parallel factor
 
 using feature_t = ap_fixed<16, 4>;  // feature map type
 using weight_t = ap_fixed<16, 4>;   // weight type
