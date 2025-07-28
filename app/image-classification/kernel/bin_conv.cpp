@@ -2,22 +2,6 @@
 
 namespace bin_conv_space {
 
-inline void _unpack_input(din_t& input, word_t _input[IN_PACKS]) {
-#pragma HLS INLINE
-    for (int p = 0; p < IN_PACKS; p++) {
-#pragma HLS UNROLL
-        _input[p] = input.range(p * 8 + 7, p * 8);
-    }
-}
-
-inline void _pack_output(acc_t _output[OUT_PACKS], dout_t& output) {
-#pragma HLS INLINE
-    for (int p = 0; p < OUT_PACKS; p++) {
-#pragma HLS UNROLL
-        output.range(p * 8 + 7, p * 8) = (word_t)_output[p];
-    }
-}
-
 inline void _init_weight(word_t weight[OUT_CH][K][K]) {
 #pragma HLS INLINE
     for (int oc = 0; oc < OUT_CH; oc++) {
