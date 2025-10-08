@@ -1,0 +1,8 @@
+# fc2.yaml
+clk:        clk
+rstn:       rstn
+streams_in:
+  - {name: in_stream, width: 192}
+streams_out: 
+  - {name: out_stream, width: 384}
+packing: 1024
