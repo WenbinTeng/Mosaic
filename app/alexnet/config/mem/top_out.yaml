@@ -1,0 +1,12 @@
+# top_out.yaml
+clk: aclk
+rstn: arstn
+aximm:
+  name: res
+  addr_w: 48
+  data_w: 8
+streams_out: 
+  - {name: res_stream, width: 8}
+packing: 64
+options:
+  include_route: True

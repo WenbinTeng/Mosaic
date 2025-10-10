@@ -19,7 +19,7 @@ constexpr int P = 2;                              // padding size
 constexpr int OUT_CH = 256;                       // output channel
 constexpr int OUT_H = (IN_H - K + 2 * P) / S + 1; // 27, output height
 constexpr int OUT_W = (IN_W - K + 2 * P) / S + 1; // 27, output width
-constexpr int PAR = 8;                           // parallel factor
+constexpr int PAR = 8;                            // parallel factor
 
 using din_t = ap_int<PREV_PAR * 8>; // data input type
 using dout_t = ap_int<PAR * 8>;     // data output type

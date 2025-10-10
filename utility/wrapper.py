@@ -6,14 +6,11 @@ DEBUG=0
 tmpl_str_path = "./utility/wrapper_t_str.v.j2"
 tmpl_mem_path = "./utility/wrapper_t_mem.v.j2"
 conf_path = "./app/lenet/config/mem/top_in.yaml"
-wrap_type = 1
 if not DEBUG:
     parser = argparse.ArgumentParser()
     parser.add_argument("-c", "--conf", required=True, help="The wrapper config YAML file path.")
-    parser.add_argument("-t", "--type", required=True, help="The wrapper type, 0-stream, 1-mem")
     args = parser.parse_args()
     conf_path = args.conf
-    wrap_type = args.type
 conf = yaml.safe_load(open(conf_path))
 
 # 1) logic->phy packing, m->n
@@ -43,7 +40,7 @@ open(os.path.join(dst_dir, dst_filename),"w").write(
                 in_packing_groups=list(enumerate(in_grp)),
                 out_packing_groups=list(enumerate(out_grp))))
 
-if int(wrap_type) == 1:
+if "aximm" in conf:
     dst_mem_filename = os.path.splitext(os.path.basename(conf_path))[0]+"_mem_wrapper.v"
     tmpl = jinja2.Template(open(tmpl_mem_path).read())
     open(os.path.join(dst_dir, dst_mem_filename),"w").write(

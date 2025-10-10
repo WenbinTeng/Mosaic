@@ -1,0 +1,8 @@
+# conv1.yaml
+clk: aclk
+rstn: arstn
+streams_in:
+  - {name: in_stream, width: 24}
+streams_out: 
+  - {name: out_stream, width: 32}
+packing: 64

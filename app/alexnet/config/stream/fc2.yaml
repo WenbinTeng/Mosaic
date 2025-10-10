@@ -1,0 +1,10 @@
+# fc2.yaml
+clk: aclk
+rstn: arstn
+streams_in:
+  - {name: in_stream,     width: 8}
+  - {name: weight_stream, width: 8}
+  - {name: bias_stream,   width: 8}
+streams_out: 
+  - {name: out_stream, width: 8}
+packing: 64

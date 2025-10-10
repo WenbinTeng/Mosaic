@@ -47,11 +47,11 @@ module {{module_name}}
 {%- for i,grp in in_packing_groups %}
     assign lii_in_p{{i}}_tready =
         {% for s in grp %}{{s.name}}_tready{% if not loop.last %} & {% endif %}{% endfor %};
+    {%- set ns = namespace(idx=0) %}
     {%- for s in grp %}
-    {%- set idx = 0 %}
-    assign {{s.name}}_tdata  = lii_in_p{{i}}_tdata[{{idx + s.width - 1}}:{{idx}}];
+    assign {{s.name}}_tdata  = lii_in_p{{i}}_tdata[{{ns.idx + s.width - 1}}:{{ns.idx}}];
     assign {{s.name}}_tvalid = lii_in_p{{i}}_tvalid;
-    {%- set idx = idx + s.width %}
+    {%- set ns.idx = ns.idx + s.width %}
     {%- endfor %}
 {%- endfor %}
 
