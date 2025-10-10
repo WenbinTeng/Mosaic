@@ -3,7 +3,7 @@
 module top_in_mem_wrapper #(
     parameter AXI_AW = 48,
     parameter AXI_DW = 8,
-    parameter LII_DW = 1024
+    parameter LII_DW = 64
 )(
     // ---------- clock and reset ----------
     input  wire                 clk,

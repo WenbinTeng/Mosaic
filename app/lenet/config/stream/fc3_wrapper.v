@@ -4,7 +4,7 @@ module fc3_wrapper
 #(
     parameter NIN  = 1,   // logic input streams
     parameter NOUT = 1,  // logic output streams
-    parameter P    = 2,              // phy in channels
+    parameter P    = 1,              // phy in channels
     parameter Q    = 1,             // phy out channels
     parameter PW   = 64              // packing width
 )
@@ -18,11 +18,6 @@ module fc3_wrapper
     output wire                     lii_in_p0_tready,
     input  wire [7:0]               lii_in_p0_src,
     input  wire [7:0]               lii_in_p0_dst,
-    input  wire [PW-1:0]            lii_in_p1_tdata,
-    input  wire                     lii_in_p1_tvalid,
-    output wire                     lii_in_p1_tready,
-    input  wire [7:0]               lii_in_p1_src,
-    input  wire [7:0]               lii_in_p1_dst,
     // ------ LII phy output ------
     output wire [PW-1:0]            lii_out_p0_tdata,
     output wire                     lii_out_p0_tvalid,
@@ -30,10 +25,10 @@ module fc3_wrapper
     output wire [7:0]               lii_out_p0_src,
     output wire [7:0]               lii_out_p0_dst,
     // ------ connection to HLS kernel ------
-    output wire [383:0]   in_stream_tdata,
+    output wire [47:0]   in_stream_tdata,
     output wire                     in_stream_tvalid,
     input  wire                     in_stream_tready,
-    input  wire [63:0]   out_stream_tdata,
+    input  wire [7:0]   out_stream_tdata,
     input  wire                     out_stream_tvalid,
     output wire                     out_stream_tready,
     // ------ clock enable for HLS kernel ------
@@ -42,11 +37,9 @@ module fc3_wrapper
 
     // ========= input: unpack =========
     assign lii_in_p0_tready =
-        ;
-    assign lii_in_p1_tready =
         in_stream_tready;
-    assign in_stream_tdata  = lii_in_p1_tdata[383:0];
-    assign in_stream_tvalid = lii_in_p1_tvalid;
+    assign in_stream_tdata  = lii_in_p0_tdata[47:0];
+    assign in_stream_tvalid = lii_in_p0_tvalid;
 
     // ========= output: pack =========
     assign lii_out_p0_tvalid = 
@@ -60,5 +53,5 @@ module fc3_wrapper
     // ========= kernel clock gating =========
     assign ce = (out_stream_tvalid) &
                 (lii_out_p0_tready) &
-                (lii_in_p0_tready & lii_in_p1_tready);
+                (lii_in_p0_tready);
 endmodule

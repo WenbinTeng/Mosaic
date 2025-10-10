@@ -6,7 +6,7 @@ module top_out_wrapper
     parameter NOUT = 1,  // logic output streams
     parameter P    = 0,              // phy in channels
     parameter Q    = 1,             // phy out channels
-    parameter PW   = 1024              // packing width
+    parameter PW   = 64              // packing width
 )
 (
     // ------ clock and reset ------
@@ -20,9 +20,9 @@ module top_out_wrapper
     output wire [7:0]               lii_out_p0_src,
     output wire [7:0]               lii_out_p0_dst,
     // ------ connection to HLS kernel ------
-    input  wire [7:0]   img_stream_tdata,
-    input  wire                     img_stream_tvalid,
-    output wire                     img_stream_tready,
+    input  wire [7:0]   res_stream_tdata,
+    input  wire                     res_stream_tvalid,
+    output wire                     res_stream_tready,
     // ------ clock enable for HLS kernel ------
     output wire                     ce
 );
@@ -31,15 +31,15 @@ module top_out_wrapper
 
     // ========= output: pack =========
     assign lii_out_p0_tvalid = 
-        img_stream_tvalid;
+        res_stream_tvalid;
     assign lii_out_p0_tdata = {
-        img_stream_tdata
+        res_stream_tdata
     };
-    assign { img_stream_tready } =
+    assign { res_stream_tready } =
            { lii_out_p0_tready };
 
     // ========= kernel clock gating =========
-    assign ce = (img_stream_tvalid) &
+    assign ce = (res_stream_tvalid) &
                 (lii_out_p0_tready) &
                 ();
 endmodule

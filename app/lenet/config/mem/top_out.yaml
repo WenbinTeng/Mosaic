@@ -7,6 +7,6 @@ aximm:
   data_w: 8
 streams_out: 
   - {name: res_stream, width: 8}
-packing: 1024
+packing: 64
 options:
   include_route: True

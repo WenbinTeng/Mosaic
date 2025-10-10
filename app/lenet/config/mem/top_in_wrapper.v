@@ -6,7 +6,7 @@ module top_in_wrapper
     parameter NOUT = 1,  // logic output streams
     parameter P    = 0,              // phy in channels
     parameter Q    = 1,             // phy out channels
-    parameter PW   = 1024              // packing width
+    parameter PW   = 64              // packing width
 )
 (
     // ------ clock and reset ------

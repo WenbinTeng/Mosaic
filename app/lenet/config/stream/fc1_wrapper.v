@@ -6,7 +6,7 @@ module fc1_wrapper
     parameter NOUT = 1,  // logic output streams
     parameter P    = 1,              // phy in channels
     parameter Q    = 1,             // phy out channels
-    parameter PW   = 1024              // packing width
+    parameter PW   = 128              // packing width
 )
 (
     // ------ clock and reset ------
@@ -25,10 +25,10 @@ module fc1_wrapper
     output wire [7:0]               lii_out_p0_src,
     output wire [7:0]               lii_out_p0_dst,
     // ------ connection to HLS kernel ------
-    output wire [1023:0]   in_stream_tdata,
+    output wire [127:0]   in_stream_tdata,
     output wire                     in_stream_tvalid,
     input  wire                     in_stream_tready,
-    input  wire [191:0]   out_stream_tdata,
+    input  wire [23:0]   out_stream_tdata,
     input  wire                     out_stream_tvalid,
     output wire                     out_stream_tready,
     // ------ clock enable for HLS kernel ------
@@ -38,7 +38,7 @@ module fc1_wrapper
     // ========= input: unpack =========
     assign lii_in_p0_tready =
         in_stream_tready;
-    assign in_stream_tdata  = lii_in_p0_tdata[1023:0];
+    assign in_stream_tdata  = lii_in_p0_tdata[127:0];
     assign in_stream_tvalid = lii_in_p0_tvalid;
 
     // ========= output: pack =========

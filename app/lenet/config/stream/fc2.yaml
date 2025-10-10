@@ -2,7 +2,7 @@
 clk: aclk
 rstn: arstn
 streams_in:
-  - {name: in_stream, width: 192}
+  - {name: in_stream, width: 24}
 streams_out: 
-  - {name: out_stream, width: 384}
-packing: 1024
+  - {name: out_stream, width: 48}
+packing: 64
