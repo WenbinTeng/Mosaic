@@ -1,6 +1,6 @@
 # fc2.yaml
-clk:        clk
-rstn:       rstn
+clk: aclk
+rstn: arstn
 streams_in:
   - {name: in_stream, width: 192}
 streams_out: 

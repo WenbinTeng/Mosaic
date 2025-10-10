@@ -1,6 +1,6 @@
 # pool1.yaml
-clk:        clk
-rstn:       rstn
+clk: aclk
+rstn: arstn
 streams_in:
   - {name: in_stream, width: 384}
 streams_out: 

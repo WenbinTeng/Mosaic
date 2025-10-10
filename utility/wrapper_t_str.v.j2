@@ -1,0 +1,75 @@
+`timescale 1ns/1ps
+
+module {{module_name}}
+#(
+    parameter NIN  = {{streams_in|length}},   // logic input streams
+    parameter NOUT = {{streams_out|length}},  // logic output streams
+    parameter P    = {{phy_in}},              // phy in channels
+    parameter Q    = {{phy_out}},             // phy out channels
+    parameter PW   = {{packing}}              // packing width
+)
+(
+    // ------ clock and reset ------
+    input  wire                     {{clk}},
+    input  wire                     {{rstn}},
+    // ------ LII phy input ------
+{%- for i in range(phy_in) %}
+    input  wire [PW-1:0]            lii_in_p{{i}}_tdata,
+    input  wire                     lii_in_p{{i}}_tvalid,
+    output wire                     lii_in_p{{i}}_tready,
+    input  wire [7:0]               lii_in_p{{i}}_src,
+    input  wire [7:0]               lii_in_p{{i}}_dst,
+{%- endfor %}
+    // ------ LII phy output ------
+{%- for i in range(phy_out) %}
+    output wire [PW-1:0]            lii_out_p{{i}}_tdata,
+    output wire                     lii_out_p{{i}}_tvalid,
+    input  wire                     lii_out_p{{i}}_tready,
+    output wire [7:0]               lii_out_p{{i}}_src,
+    output wire [7:0]               lii_out_p{{i}}_dst,
+{%- endfor %}
+    // ------ connection to HLS kernel ------
+{%- for s in streams_in %}
+    output wire [{{s.width-1}}:0]   {{s.name}}_tdata,
+    output wire                     {{s.name}}_tvalid,
+    input  wire                     {{s.name}}_tready,
+{%- endfor %}
+{%- for s in streams_out %}
+    input  wire [{{s.width-1}}:0]   {{s.name}}_tdata,
+    input  wire                     {{s.name}}_tvalid,
+    output wire                     {{s.name}}_tready,
+{%- endfor %}
+    // ------ clock enable for HLS kernel ------
+    output wire                     ce
+);
+
+    // ========= input: unpack =========
+{%- for i,grp in in_packing_groups %}
+    assign lii_in_p{{i}}_tready =
+        {% for s in grp %}{{s.name}}_tready{% if not loop.last %} & {% endif %}{% endfor %};
+    {%- for s in grp %}
+    {%- set idx = 0 %}
+    assign {{s.name}}_tdata  = lii_in_p{{i}}_tdata[{{idx + s.width - 1}}:{{idx}}];
+    assign {{s.name}}_tvalid = lii_in_p{{i}}_tvalid;
+    {%- set idx = idx + s.width %}
+    {%- endfor %}
+{%- endfor %}
+
+    // ========= output: pack =========
+{%- for i,grp in out_packing_groups %}
+    assign lii_out_p{{i}}_tvalid = 
+        {% for s in grp %}{{s.name}}_tvalid{% if not loop.last %} & {% endif %}{% endfor %};
+    assign lii_out_p{{i}}_tdata = {
+{%- for s in grp %}
+        {{s.name}}_tdata{{", " if not loop.last else ""}}
+{%- endfor %}
+    };
+    assign { {% for s in grp %}{{s.name}}_tready{% if not loop.last %}, {% endif %}{% endfor %} } =
+           { {% for s in grp %}lii_out_p{{i}}_tready{% if not loop.last %}, {% endif %}{% endfor %} };
+{%- endfor %}
+
+    // ========= kernel clock gating =========
+    assign ce = ({% for s in streams_out %}{{s.name}}_tvalid{% if not loop.last %} & {% endif %}{% endfor %}) &
+                ({% for i in range(phy_out) %}lii_out_p{{i}}_tready{% if not loop.last %} & {% endif %}{% endfor %}) &
+                ({% for i in range(phy_in) %}lii_in_p{{i}}_tready{% if not loop.last %} & {% endif %}{% endfor %});
+endmodule

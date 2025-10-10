@@ -1,6 +1,6 @@
 # fc1.yaml
-clk:        clk
-rstn:       rstn
+clk: aclk
+rstn: arstn
 streams_in:
   - {name: in_stream, width: 1024}
 streams_out: 

@@ -1,6 +1,6 @@
 # conv1.yaml
-clk:        clk
-rstn:       rstn
+clk: aclk
+rstn: arstn
 streams_in:
   - {name: in_stream, width: 64}
 streams_out: 
