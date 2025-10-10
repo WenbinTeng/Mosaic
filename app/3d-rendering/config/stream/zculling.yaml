@@ -1,0 +1,8 @@
+# zculling.yaml
+clk: aclk
+rstn: arstn
+streams_in:
+  - { name: fragment_stream, width: 32 }
+streams_out:
+  - { name: pixel_stream, width: 24 }
+packing: 64

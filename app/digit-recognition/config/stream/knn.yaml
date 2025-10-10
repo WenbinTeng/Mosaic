@@ -1,0 +1,9 @@
+# knn.yaml
+clk: aclk
+rstn: arstn
+streams_in:
+  - { name: training_stream, width: 256 }
+  - { name: test_stream, width: 256 }
+streams_out:
+  - { name: out_stream, width: 8 }
+packing: 512

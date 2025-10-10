@@ -1,0 +1,10 @@
+# grad_wgt_y.yaml
+clk: aclk
+rstn: arstn
+streams_in:
+  - { name: gradient_x_stream, width: 32 }
+  - { name: gradient_y_stream, width: 32 }
+  - { name: gradient_z_stream, width: 32 }
+streams_out:
+  - { name: filt_grad_stream, width: 96 }
+packing: 128

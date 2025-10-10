@@ -1,0 +1,8 @@
+# outer_product.yaml
+clk: aclk
+rstn: arstn
+streams_in:
+  - { name: gradient_stream, width: 96 }
+streams_out:
+  - { name: outer_product_stream, width: 192 }
+packing: 256

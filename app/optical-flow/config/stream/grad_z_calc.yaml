@@ -1,0 +1,12 @@
+# grad_z_calc.yaml
+clk: aclk
+rstn: arstn
+streams_in:
+  - { name: frame1_stream, width: 17 }
+  - { name: frame2_stream, width: 17 }
+  - { name: frame3_stream, width: 17 }
+  - { name: frame4_stream, width: 17 }
+  - { name: frame5_stream, width: 17 }
+streams_out:
+  - { name: gradient_z_stream, width: 32 }
+packing: 128

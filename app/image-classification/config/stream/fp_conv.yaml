@@ -1,0 +1,8 @@
+# fp_conv.yaml
+clk: aclk
+rstn: arstn
+streams_in:
+  - { name: in_stream, width: 16 }
+streams_out:
+  - { name: out_stream, width: 16 }
+packing: 64

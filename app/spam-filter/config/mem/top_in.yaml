@@ -1,0 +1,13 @@
+# top_in.yaml
+clk: aclk
+rstn: arstn
+aximm:
+  name: input
+  addr_w: 48
+  data_w: 64
+streams_out:
+  - { name: data_stream, width: 16 }
+  - { name: label_stream, width: 8 }
+packing: 128
+options:
+  include_route: True

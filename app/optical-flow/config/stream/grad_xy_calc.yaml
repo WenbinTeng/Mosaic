@@ -1,0 +1,9 @@
+# grad_xy_calc.yaml
+clk: aclk
+rstn: arstn
+streams_in:
+  - { name: frame_stream, width: 17 }
+streams_out:
+  - { name: gradient_x_stream, width: 32 }
+  - { name: gradient_y_stream, width: 32 }
+packing: 64

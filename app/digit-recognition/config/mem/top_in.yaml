@@ -1,0 +1,13 @@
+# top_in.yaml
+clk: aclk
+rstn: arstn
+aximm:
+  name: digit
+  addr_w: 48
+  data_w: 256
+streams_out:
+  - { name: training_stream, width: 256 }
+  - { name: test_stream, width: 256 }
+packing: 512
+options:
+  include_route: True

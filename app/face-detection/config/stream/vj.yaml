@@ -1,0 +1,8 @@
+# vj.yaml
+clk: aclk
+rstn: arstn
+streams_in:
+  - { name: in_stream, width: 8 }
+streams_out:
+  - { name: out_stream, width: 160 }
+packing: 256

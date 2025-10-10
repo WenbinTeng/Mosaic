@@ -5,14 +5,14 @@ aximm:
   name: img
   addr_w: 48
   data_w: 8
-streams_out: 
-  - {name: img_stream,        width: 8}
-  - {name: fc1_weight_stream, width: 8}
-  - {name: fc1_bias_stream,   width: 8}
-  - {name: fc2_weight_stream, width: 8}
-  - {name: fc2_bias_stream,   width: 8}
-  - {name: fc3_weight_stream, width: 8}
-  - {name: fc3_bias_stream,   width: 8}
+streams_out:
+  - { name: img_stream, width: 8 }
+  - { name: fc1_weight_stream, width: 8 }
+  - { name: fc1_bias_stream, width: 8 }
+  - { name: fc2_weight_stream, width: 8 }
+  - { name: fc2_bias_stream, width: 8 }
+  - { name: fc3_weight_stream, width: 8 }
+  - { name: fc3_bias_stream, width: 8 }
 packing: 64
 options:
   include_route: True

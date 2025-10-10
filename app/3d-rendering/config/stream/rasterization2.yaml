@@ -1,0 +1,9 @@
+# rasterization2.yaml
+clk: aclk
+rstn: arstn
+streams_in:
+  - { name: triangle_2d_copy_stream, width: 56 }
+  - { name: triangle_info_stream, width: 58 }
+streams_out:
+  - { name: fragment_stream, width: 32 }
+packing: 128

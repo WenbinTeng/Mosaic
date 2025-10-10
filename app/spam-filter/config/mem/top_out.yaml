@@ -1,0 +1,12 @@
+# top_out.yaml
+clk: aclk
+rstn: arstn
+aximm:
+  name: output
+  addr_w: 48
+  data_w: 64
+streams_in:
+  - { name: theta_stream, width: 32 }
+packing: 128
+options:
+  include_route: True

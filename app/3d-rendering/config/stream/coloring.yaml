@@ -1,0 +1,8 @@
+# coloring.yaml
+clk: aclk
+rstn: arstn
+streams_in:
+  - { name: pixel_stream, width: 24 }
+streams_out:
+  - { name: frame_stream, width: 8 }
+packing: 64

@@ -1,0 +1,9 @@
+# sgd.yaml
+clk: aclk
+rstn: arstn
+streams_in:
+  - { name: data_stream, width: 16 }
+  - { name: label_stream, width: 8 }
+streams_out:
+  - { name: theta_stream, width: 32 }
+packing: 64

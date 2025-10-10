@@ -1,0 +1,8 @@
+# ten_wgt_y.yaml
+clk: aclk
+rstn: arstn
+streams_in:
+  - { name: outer_product_stream, width: 192 }
+streams_out:
+  - { name: tensor_y_stream, width: 192 }
+packing: 256

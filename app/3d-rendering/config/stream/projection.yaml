@@ -1,0 +1,8 @@
+# projection.yaml
+clk: aclk
+rstn: arstn
+streams_in:
+  - { name: triangle_3d_stream, width: 72 }
+streams_out:
+  - { name: triangle_2d_stream, width: 56 }
+packing: 128
