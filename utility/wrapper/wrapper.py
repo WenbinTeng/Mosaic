@@ -1,16 +1,17 @@
 import argparse
-import yaml, jinja2, json, os
+import yaml, jinja2, os
 
 DEBUG=0
 
-tmpl_str_path = "./utility/wrapper_t_str.v.j2"
-tmpl_mem_path = "./utility/wrapper_t_mem.v.j2"
-conf_path = "./app/lenet/config/mem/top_in.yaml"
+tmpl_str_path = "./utility/wrapper/wrapper_t_str.v.j2"
+tmpl_mem_path = "./utility/wrapper/wrapper_t_mem.v.j2"
+conf_path = "app/lenet/config/mem/top_in.yaml"
 if not DEBUG:
     parser = argparse.ArgumentParser()
-    parser.add_argument("-c", "--conf", required=True, help="The wrapper config YAML file path.")
+    parser.add_argument("-c", "--config", required=True, help="The wrapper config YAML file path.")
+    parser.add_argument("-o", "--output", required=True, help="The output path for generated wrapper files.")
     args = parser.parse_args()
-    conf_path = args.conf
+    conf_path = args.config
 conf = yaml.safe_load(open(conf_path))
 
 # 1) logic->phy packing, m->n
@@ -29,9 +30,10 @@ def pack(streams, W):
 # 2) rendering RTL
 in_grp  = pack(conf["streams_in"],  conf["packing"]) if "streams_in" in conf else []
 out_grp = pack(conf["streams_out"], conf["packing"]) if "streams_out" in conf else []
-dst_dir = os.path.dirname(conf_path)
+dst_dir = os.path.join(args.output, os.path.dirname(conf_path))
 dst_filename = os.path.splitext(os.path.basename(conf_path))[0]+"_wrapper.v"
 tmpl = jinja2.Template(open(tmpl_str_path).read())
+os.makedirs(dst_dir, exist_ok=True)
 open(os.path.join(dst_dir, dst_filename),"w").write(
     tmpl.render(**conf,
                 module_name=os.path.splitext(dst_filename)[0],
