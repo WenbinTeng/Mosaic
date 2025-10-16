@@ -1,7 +1,7 @@
 import argparse
 import jinja2, os
 
-DEBUG=1
+DEBUG=0
 
 tmpl_path = "./utility/router/lii_router.v.j2"
 output_path = "build"
@@ -12,15 +12,15 @@ if not DEBUG:
     output_path = args.output
 
 params = {
-    'N_IN': 4,
-    'N_OUT': 2,
-    'DW': 256,
-    'SRC_W': 8,
-    'DST_W': 8,
-    'TYPE_W': 2,
-    'ROUTE_MSB': 7,
-    'FIFO_DEPTH': 2,
-    "TYPE_PRIO": 2
+    "N_IN": 4,
+    "N_OUT": 2,
+    "DW": 256,
+    "SRC_W": 8,
+    "DST_W": 8,
+    "TYPE_W": 2,
+    "ROUTE_MSB": 7,
+    "FIFO_DEPTH": 2,
+    "TYPE_PRIO": 2,
 }
 
 tmpl = jinja2.Template(open(tmpl_path).read())

@@ -1,7 +1,7 @@
 import argparse
 import yaml, jinja2, os
 
-DEBUG=1
+DEBUG=0
 
 tmpl_str_path = "./utility/wrapper/wrapper_t_str.v.j2"
 tmpl_mem_path = "./utility/wrapper/wrapper_t_mem.v.j2"
