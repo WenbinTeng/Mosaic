@@ -1,0 +1,139 @@
+`timescale 1ns/1ps
+
+module {{ module_name }} #(
+    parameter integer N_IN       = {{ params.N_IN }},
+    parameter integer N_OUT      = {{ params.N_OUT }},
+    parameter integer DW         = {{ params.DW }},
+    parameter integer SRC_W      = {{ params.SRC_W }},
+    parameter integer DST_W      = {{ params.DST_W }},
+    parameter integer TYPE_W     = {{ params.TYPE_W }},
+    parameter integer ROUTE_MSB  = {{ params.ROUTE_MSB }},
+    parameter integer FIFO_DEPTH = {{ params.FIFO_DEPTH }},
+    parameter integer TYPE_PRIO  = {{ params.TYPE_PRIO }}
+)(
+    input  wire clk,
+    input  wire rstn,
+
+{% set IDW = params.SRC_W + params.TYPE_W %}
+    // ---------------- AXIS Slave (inputs to router) ----------------
+{% for i in range(params.N_IN) %}
+    // ---- S{{i}}_AXIS ----
+    (* X_INTERFACE_INFO = "xilinx.com:interface:axis:1.0 S{{i}}_AXIS TDATA" *)
+    input  wire [DW-1:0]         s{{i}}_axis_tdata,
+    (* X_INTERFACE_INFO = "xilinx.com:interface:axis:1.0 S{{i}}_AXIS TKEEP" *)
+    input  wire [DW-1:0]         s{{i}}_axis_tkeep,
+    (* X_INTERFACE_INFO = "xilinx.com:interface:axis:1.0 S{{i}}_AXIS TSTRB" *)
+    input  wire [DW-1:0]         s{{i}}_axis_tstrb,
+    (* X_INTERFACE_INFO = "xilinx.com:interface:axis:1.0 S{{i}}_AXIS TLAST" *)
+    input  wire                  s{{i}}_axis_tlast,
+    (* X_INTERFACE_INFO = "xilinx.com:interface:axis:1.0 S{{i}}_AXIS TID" *)
+    input  wire [{{IDW-1}}:0]    s{{i}}_axis_tid,   // {TYPE, SRC}
+    (* X_INTERFACE_INFO = "xilinx.com:interface:axis:1.0 S{{i}}_AXIS TDEST" *)
+    input  wire [DST_W-1:0]      s{{i}}_axis_tdest, // DST
+    (* X_INTERFACE_INFO = "xilinx.com:interface:axis:1.0 S{{i}}_AXIS TVALID" *)
+    input  wire                  s{{i}}_axis_tvalid,
+    (* X_INTERFACE_INFO = "xilinx.com:interface:axis:1.0 S{{i}}_AXIS TREADY" *)
+    output wire                  s{{i}}_axis_tready,
+    (* X_INTERFACE_PARAMETER = "XIL_INTERFACENAME S{{i}}_AXIS, TDATA_NUM_BYTES {{params.DW//8}}, TDEST_WIDTH {{params.DST_W}}, TID_WIDTH {{IDW}}, TUSER_WIDTH 0, HAS_TKEEP 1, HAS_TSTRB 1, HAS_TLAST 1, FREQ_HZ 100000000, HAS_TREADY 1, LAYERED_METADATA undef" *)
+    input  wire                  s{{i}}_axis_params, // dummy
+{% endfor %}
+
+    // ---------------- AXIS Master (outputs from router) ------------
+{% for o in range(params.N_OUT) %}
+    // ---- M{{o}}_AXIS ----
+    (* X_INTERFACE_INFO = "xilinx.com:interface:axis:1.0 M{{o}}_AXIS TDATA" *)
+    output wire [DW-1:0]         m{{o}}_axis_tdata,
+    (* X_INTERFACE_INFO = "xilinx.com:interface:axis:1.0 M{{o}}_AXIS TKEEP" *)
+    output wire [DW-1:0]         m{{o}}_axis_tkeep,
+    (* X_INTERFACE_INFO = "xilinx.com:interface:axis:1.0 M{{o}}_AXIS TSTRB" *)
+    output wire [DW-1:0]         m{{o}}_axis_tstrb,
+    (* X_INTERFACE_INFO = "xilinx.com:interface:axis:1.0 M{{o}}_AXIS TLAST" *)
+    output wire                  m{{o}}_axis_tlast,
+    (* X_INTERFACE_INFO = "xilinx.com:interface:axis:1.0 M{{o}}_AXIS TID" *)
+    output wire [{{IDW-1}}:0]    m{{o}}_axis_tid,   // {TYPE, SRC}
+    (* X_INTERFACE_INFO = "xilinx.com:interface:axis:1.0 M{{o}}_AXIS TDEST" *)
+    output wire [DST_W-1:0]      m{{o}}_axis_tdest, // DST
+    (* X_INTERFACE_INFO = "xilinx.com:interface:axis:1.0 M{{o}}_AXIS TVALID" *)
+    output wire                  m{{o}}_axis_tvalid,
+    (* X_INTERFACE_INFO = "xilinx.com:interface:axis:1.0 M{{o}}_AXIS TREADY" *)
+    input  wire                  m{{o}}_axis_tready,
+    (* X_INTERFACE_PARAMETER = "XIL_INTERFACENAME M{{o}}_AXIS, TDATA_NUM_BYTES {{params.DW//8}}, TDEST_WIDTH {{params.DST_W}}, TID_WIDTH {{IDW}}, TUSER_WIDTH 0, HAS_TKEEP 1, HAS_TSTRB 1, HAS_TLAST 1, FREQ_HZ 100000000, HAS_TREADY 1, LAYERED_METADATA undef" *)
+    input  wire                  m{{o}}_axis_params // dummy
+    {% if o < params.N_OUT - 1 %},{% endif %}
+{% endfor %}
+);
+
+    // ---------------- Flatten buses for core ----------------
+    wire [N_IN*DW-1:0]        in_data;
+    wire [N_IN*(DW/8)-1:0]    in_keep, in_strb;
+    wire [N_IN-1:0]           in_last, in_valid, in_ready_w;
+    wire [N_IN*SRC_W-1:0]     in_src;
+    wire [N_IN*DST_W-1:0]     in_dst;
+    wire [N_IN*TYPE_W-1:0]    in_type;
+
+    wire [N_OUT*DW-1:0]       out_data;
+    wire [N_OUT*(DW/8)-1:0]   out_keep, out_strb;
+    wire [N_OUT-1:0]          out_last, out_valid, out_ready_w;
+    wire [N_OUT*SRC_W-1:0]    out_src;
+    wire [N_OUT*DST_W-1:0]    out_dst;
+    wire [N_OUT*TYPE_W-1:0]   out_type;
+
+    // -------- pack S_AXIS -> flattened inputs --------
+{% for i in range(params.N_IN) %}
+    assign in_data [{{i}}*DW +: DW]           = s{{i}}_axis_tdata;
+    assign in_keep [{{i}}*(DW/8) +: (DW/8)]   = s{{i}}_axis_tkeep;
+    assign in_strb [{{i}}*(DW/8) +: (DW/8)]   = s{{i}}_axis_tstrb;
+    assign in_last [{{i}}]                    = s{{i}}_axis_tlast;
+    assign in_valid[{{i}}]                    = s{{i}}_axis_tvalid;
+    assign s{{i}}_axis_tready                 = in_ready_w[{{i}}];
+
+    // tid => {TYPE, SRC}
+    assign in_type[{{i}}*TYPE_W +: TYPE_W]    = s{{i}}_axis_tid[{{IDW-1}} -: TYPE_W];
+    assign in_src [{{i}}*SRC_W  +: SRC_W ]    = s{{i}}_axis_tid[SRC_W-1:0];
+    assign in_dst [{{i}}*DST_W  +: DST_W ]    = s{{i}}_axis_tdest;
+{% endfor %}
+
+    // -------- unpack flattened outputs -> M_AXIS --------
+{% for o in range(params.N_OUT) %}
+    assign m{{o}}_axis_tdata  = out_data [{{o}}*DW +: DW];
+    assign m{{o}}_axis_tkeep  = out_keep [{{o}}*(DW/8) +: (DW/8)];
+    assign m{{o}}_axis_tstrb  = out_strb [{{o}}*(DW/8) +: (DW/8)];
+    assign m{{o}}_axis_tlast  = out_last [{{o}}];
+    assign m{{o}}_axis_tvalid = out_valid[{{o}}];
+    assign out_ready_w[{{o}}] = m{{o}}_axis_tready;
+
+    // tid <= {TYPE, SRC}
+    assign m{{o}}_axis_tid    = { out_type[{{o}}*TYPE_W +: TYPE_W], out_src[{{o}}*SRC_W +: SRC_W] };
+    assign m{{o}}_axis_tdest  = out_dst [{{o}}*DST_W  +: DST_W ];
+{% endfor %}
+
+    // ---------------- Core instance ----------------
+    lii_router_core #(
+        .N_IN(N_IN), .N_OUT(N_OUT), .DW(DW), .SRC_W(SRC_W), .DST_W(DST_W),
+        .TYPE_W(TYPE_W), .ROUTE_MSB(ROUTE_MSB), .FIFO_DEPTH(FIFO_DEPTH), .TYPE_PRIO(TYPE_PRIO)
+    ) u_core (
+        .clk      (clk),
+        .rstn     (rstn),
+
+        .in_data  (in_data),
+        .in_keep  (in_keep),
+        .in_strb  (in_strb),
+        .in_last  (in_last),
+        .in_src   (in_src),
+        .in_dst   (in_dst),
+        .in_type  (in_type),
+        .in_valid (in_valid),
+        .in_ready (in_ready_w),
+
+        .out_data (out_data),
+        .out_keep (out_keep),
+        .out_strb (out_strb),
+        .out_last (out_last),
+        .out_src  (out_src),
+        .out_dst  (out_dst),
+        .out_type (out_type),
+        .out_valid(out_valid),
+        .out_ready(out_ready_w)
+    );
+
+endmodule

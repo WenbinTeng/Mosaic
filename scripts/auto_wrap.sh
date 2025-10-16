@@ -10,7 +10,7 @@
 
 ROOT_DIR=.
 TOOL_DIR=$ROOT_DIR/utility/wrapper
-WRAPPER_FILE=$TOOL_DIR/wrapper.py
+WRAPPER_FILE=$TOOL_DIR/gen_wrapper.py
 CONF_STR_DIR=${1:-"./app/lenet"}/config/stream
 CONF_MEM_DIR=${1:-"./app/lenet"}/config/mem
 OUTPUT_DIR=build
