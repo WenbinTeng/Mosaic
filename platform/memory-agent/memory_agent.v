@@ -1,0 +1,218 @@
+`timescale 1ns/1ps
+
+module memory_agent #(
+    parameter integer AXI_AW = 48,
+    parameter integer AXI_DW = 128,
+    parameter integer LII_DW = 256,
+    parameter integer TAG_W  = 8
+)(
+    input  wire                   clk,
+    input  wire                   rstn,
+
+    // ---------------- LII request (from Router) ----------------
+    input  wire [LII_DW-1:0]      lii_req_data,
+    input  wire [LII_DW/8-1:0]    lii_req_keep,
+    input  wire [LII_DW/8-1:0]    lii_req_strb,
+    input  wire                   lii_req_last,
+    input  wire                   lii_req_valid,
+    output reg                    lii_req_ready,
+
+    // ---------------- LII response (to Router) -----------------
+    output reg  [LII_DW-1:0]      lii_resp_data,
+    output reg  [LII_DW/8-1:0]    lii_resp_keep,
+    output reg  [LII_DW/8-1:0]    lii_resp_strb,
+    output reg                    lii_resp_last,
+    output reg                    lii_resp_valid,
+    input  wire                   lii_resp_ready,
+
+    // ---------------- AXI4-MM Master (to Shell) ----------------
+    // Read address
+    output reg  [AXI_AW-1:0]      aximm_araddr,
+    output reg  [7:0]             aximm_arlen,
+    output reg  [2:0]             aximm_arsize,
+    output reg                    aximm_arvalid,
+    input  wire                   aximm_arready,
+    // Read data
+    input  wire [AXI_DW-1:0]      aximm_rdata,
+    input  wire [1:0]             aximm_rresp,
+    input  wire                   aximm_rlast,
+    input  wire                   aximm_rvalid,
+    output reg                    aximm_rready,
+    // Write address
+    output reg  [AXI_AW-1:0]      aximm_awaddr,
+    output reg  [7:0]             aximm_awlen,
+    output reg  [2:0]             aximm_awsize,
+    output reg                    aximm_awvalid,
+    input  wire                   aximm_awready,
+    // Write data
+    output reg  [AXI_DW-1:0]      aximm_wdata,
+    output reg  [AXI_DW/8-1:0]    aximm_wstrb,
+    output reg                    aximm_wlast,
+    output reg                    aximm_wvalid,
+    input  wire                   aximm_wready,
+    // Write resp
+    input  wire [1:0]             aximm_bresp,
+    input  wire                   aximm_bvalid,
+    output reg                    aximm_bready
+);
+
+    // -------- unpack header --------
+    // captured header register
+    reg [1:0]          op_q;    // 00 RD, 01 WR
+    reg [7:0]          len_q;
+    reg [2:0]          size_q;
+    reg [AXI_AW-1:0]   addr_q;
+    reg [TAG_W-1:0]    tag_q;
+
+    // unpack functions
+    function [1:0] f_hdr_op;   input [LII_DW-1:0] d; begin f_hdr_op = d[LII_DW-1 -: 2];      end endfunction
+    function [7:0] f_hdr_len;  input [LII_DW-1:0] d; begin f_hdr_len = d[LII_DW-1-2 -: 8];   end endfunction
+    function [2:0] f_hdr_size; input [LII_DW-1:0] d; begin f_hdr_size= d[LII_DW-1-2-8 -: 3]; end endfunction
+    function [AXI_AW-1:0] f_hdr_addr; input [LII_DW-1:0] d; begin
+        f_hdr_addr = d[LII_DW-1-2-8-3 -: AXI_AW];
+    end endfunction
+    function [TAG_W-1:0] f_hdr_tag; input [LII_DW-1:0] d; begin
+        f_hdr_tag  = d[LII_DW-1-2-8-3-AXI_AW -: TAG_W];
+    end endfunction
+
+    // ----------------- FSM -----------------
+    localparam [2:0]
+        S_IDLE     = 3'd0,
+        S_HDR_RD   = 3'd1,
+        S_HDR_WR   = 3'd2,
+        S_SEND_W   = 3'd3,
+        S_WAIT_R   = 3'd4,
+        S_WAIT_B   = 3'd5,
+        S_SEND_BFL = 3'd6;
+
+    reg [2:0] st, st_n;
+
+    // Read/Write remaining count (burst length)
+    reg [7:0] burst_rem; // = len_q+1
+    wire      is_last_wbeat = (burst_rem == 8'd1);
+
+    // Combination
+    always @(*) begin
+        // LII
+        lii_req_ready  = 1'b0;
+        lii_resp_valid = 1'b0;
+        lii_resp_last  = 1'b0;
+        lii_resp_data  = {LII_DW{1'b0}};
+        lii_resp_keep  = {LII_DW/8{1'b0}};
+        lii_resp_strb  = {LII_DW/8{1'b0}};
+
+        // AXI
+        aximm_arvalid = 1'b0; aximm_rready = 1'b0;
+        aximm_awvalid = 1'b0; aximm_wvalid = 1'b0; aximm_wlast = 1'b0;
+        aximm_bready  = 1'b0;
+
+        // Address/attribute remain register value
+        aximm_araddr  = addr_q; 
+        aximm_arlen   = len_q;
+        aximm_arsize  = size_q;
+        aximm_awaddr  = addr_q;
+        aximm_awlen   = len_q;
+        aximm_awsize  = size_q;
+
+        // Write data is retrieved from LII requests by default.
+        aximm_wdata = lii_req_data[AXI_DW-1:0];
+        aximm_wstrb = lii_req_strb[AXI_DW/8-1:0];
+
+        st_n = st;
+
+        case (st)
+            // Wait for header flit
+            S_IDLE: begin
+                lii_req_ready = 1'b1;
+                if (lii_req_valid && lii_req_ready) begin
+                    if (f_hdr_op(lii_req_data)==2'b00) st_n = S_HDR_RD;
+                    else                               st_n = S_HDR_WR;
+                end
+            end
+
+            // Read: sending AR
+            S_HDR_RD: begin
+                aximm_arvalid = 1'b1;
+                if (aximm_arvalid && aximm_arready) begin
+                    st_n = S_WAIT_R;
+                end
+            end
+
+            // Write: sending AW, then sending WDATA
+            S_HDR_WR: begin
+                aximm_awvalid = 1'b1;
+                if (aximm_awvalid && aximm_awready) begin
+                    st_n = S_SEND_W;
+                end
+            end
+
+            // Write data from LII message
+            S_SEND_W: begin
+                aximm_wvalid  = lii_req_valid;
+                aximm_wlast   = lii_req_last & lii_req_valid;
+                lii_req_ready = aximm_wready;
+                if (lii_req_valid && lii_req_ready && lii_req_last) begin
+                    st_n = S_WAIT_B;
+                end
+            end
+
+            // Wait for read response from shell's AXI
+            S_WAIT_R: begin
+                aximm_rready   = lii_resp_ready;
+                lii_resp_valid = aximm_rvalid;
+                lii_resp_last  = aximm_rlast & aximm_rvalid;
+                lii_resp_data[AXI_DW-1:0] = aximm_rdata;
+                lii_resp_keep[AXI_DW/8-1:0] = {AXI_DW/8{1'b1}};
+                if (aximm_rvalid && aximm_rready && aximm_rlast) begin
+                    st_n = S_IDLE;
+                end
+            end
+
+            // Wait for write response from shell's AXI
+            S_WAIT_B: begin
+                aximm_bready   = lii_resp_ready;
+                lii_resp_valid = aximm_bvalid;
+                lii_resp_last  = aximm_bvalid;
+                lii_resp_keep  = {LII_DW/8{1'b0}};
+                lii_resp_data[1:0] = aximm_bresp;
+                if (aximm_bvalid && aximm_bready) begin
+                    st_n = S_IDLE;
+                end
+            end
+
+        default: st_n = S_IDLE;
+        endcase
+    end
+
+    // Sequential
+    always @(posedge clk) begin
+        if (!rstn) begin
+            st <= S_IDLE;
+            op_q   <= 2'b00;
+            len_q  <= 8'd0;
+            size_q <= 3'd0;
+            addr_q <= {AXI_AW{1'b0}};
+            tag_q  <= {TAG_W{1'b0}};
+            burst_rem <= 8'd0;
+        end else begin
+            st <= st_n;
+
+            // Receive header
+            if (st==S_IDLE && lii_req_valid && lii_req_ready) begin
+                op_q   <= f_hdr_op  (lii_req_data);
+                len_q  <= f_hdr_len (lii_req_data);
+                size_q <= f_hdr_size(lii_req_data);
+                addr_q <= f_hdr_addr(lii_req_data);
+                tag_q  <= f_hdr_tag (lii_req_data);
+                burst_rem <= f_hdr_len(lii_req_data) + 8'd1;
+            end
+
+            // Maintain the remaining burst count (unused)
+            if (st==S_SEND_W && lii_req_valid && lii_req_ready && burst_rem!=0)
+                burst_rem <= burst_rem - 8'd1;
+            if (st==S_WAIT_R && aximm_rvalid && aximm_rready && burst_rem!=0)
+                burst_rem <= burst_rem - 8'd1;
+            end
+    end
+
+endmodule
