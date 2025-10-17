@@ -1,6 +1,6 @@
 `timescale 1ns/1ps
 
-module lii_rr_arb #(
+module lii_arbiter #(
     parameter integer N = 4
 )(
     input  wire                 clk,

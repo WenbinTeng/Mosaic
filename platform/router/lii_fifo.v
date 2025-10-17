@@ -1,6 +1,6 @@
 `timescale 1ns/1ps
 
-module lii_stream_fifo #(
+module lii_fifo #(
     parameter integer DW=256, SRC_W=8, DST_W=8, TYPE_W=2, DEPTH=2
 )(
     input  wire                     clk,

@@ -1,7 +1,7 @@
 `timescale 1ns/1ps
 
-// `include "lii_stream_fifo.v"
-// `include "lii_rr_arb.v"
+`include "platform/router/lii_arbiter.v"
+`include "platform/router/lii_fifo.v"
 
 module lii_router_core #(
     parameter integer N_IN        = 4,
@@ -67,26 +67,26 @@ module lii_router_core #(
             assign in_ready = q_ready_merge;
         end else begin
             for (gi=0; gi<N_IN; gi=gi+1) begin
-                lii_stream_fifo #(.DW(DW), .SRC_W(SRC_W), .DST_W(DST_W), .TYPE_W(TYPE_W), .DEPTH(FIFO_DEPTH)) U (
-                                  .clk(clk), .rstn(rstn),
-                                  .s_data ( in_data  [ (gi+1)*DW-1      : gi*DW     ] ),
-                                  .s_keep ( in_keep  [ (gi+1)*(DW/8)-1  : gi*(DW/8) ] ),
-                                  .s_strb ( in_strb  [ (gi+1)*(DW/8)-1  : gi*(DW/8) ] ),
-                                  .s_last ( in_last  [ gi ] ),
-                                  .s_src  ( in_src   [ (gi+1)*SRC_W-1   : gi*SRC_W  ] ),
-                                  .s_dst  ( in_dst   [ (gi+1)*DST_W-1   : gi*DST_W  ] ),
-                                  .s_type ( in_type  [ (gi+1)*TYPE_W-1  : gi*TYPE_W ] ),
-                                  .s_valid( in_valid [ gi ] ),
-                                  .s_ready( in_ready [ gi ] ),
-                                  .m_data ( q_data   [ (gi+1)*DW-1      : gi*DW     ] ),
-                                  .m_keep ( q_keep   [ (gi+1)*(DW/8)-1  : gi*(DW/8) ] ),
-                                  .m_strb ( q_strb   [ (gi+1)*(DW/8)-1  : gi*(DW/8) ] ),
-                                  .m_last ( q_last   [ gi ] ),
-                                  .m_src  ( q_src    [ (gi+1)*SRC_W-1   : gi*SRC_W  ] ),
-                                  .m_dst  ( q_dst    [ (gi+1)*DST_W-1   : gi*DST_W  ] ),
-                                  .m_type ( q_type   [ (gi+1)*TYPE_W-1  : gi*TYPE_W ] ),
-                                  .m_valid( q_valid  [ gi ] ),
-                                  .m_ready( q_ready  [ gi ] ));
+                lii_fifo #(.DW(DW), .SRC_W(SRC_W), .DST_W(DST_W), .TYPE_W(TYPE_W), .DEPTH(FIFO_DEPTH)) U (
+                           .clk(clk), .rstn(rstn),
+                           .s_data ( in_data  [ (gi+1)*DW-1      : gi*DW     ] ),
+                           .s_keep ( in_keep  [ (gi+1)*(DW/8)-1  : gi*(DW/8) ] ),
+                           .s_strb ( in_strb  [ (gi+1)*(DW/8)-1  : gi*(DW/8) ] ),
+                           .s_last ( in_last  [ gi ] ),
+                           .s_src  ( in_src   [ (gi+1)*SRC_W-1   : gi*SRC_W  ] ),
+                           .s_dst  ( in_dst   [ (gi+1)*DST_W-1   : gi*DST_W  ] ),
+                           .s_type ( in_type  [ (gi+1)*TYPE_W-1  : gi*TYPE_W ] ),
+                           .s_valid( in_valid [ gi ] ),
+                           .s_ready( in_ready [ gi ] ),
+                           .m_data ( q_data   [ (gi+1)*DW-1      : gi*DW     ] ),
+                           .m_keep ( q_keep   [ (gi+1)*(DW/8)-1  : gi*(DW/8) ] ),
+                           .m_strb ( q_strb   [ (gi+1)*(DW/8)-1  : gi*(DW/8) ] ),
+                           .m_last ( q_last   [ gi ] ),
+                           .m_src  ( q_src    [ (gi+1)*SRC_W-1   : gi*SRC_W  ] ),
+                           .m_dst  ( q_dst    [ (gi+1)*DST_W-1   : gi*DST_W  ] ),
+                           .m_type ( q_type   [ (gi+1)*TYPE_W-1  : gi*TYPE_W ] ),
+                           .m_valid( q_valid  [ gi ] ),
+                           .m_ready( q_ready  [ gi ] ));
             end
         assign q_ready = q_ready_merge;
         end
@@ -119,12 +119,12 @@ module lii_router_core #(
             wire [N_IN-1:0] g_hi, g_lo;
             wire            v_hi, v_lo;
 
-            lii_rr_arb #(.N(N_IN)) U_HI (.clk(clk), .rstn(rstn),
-                                         .req(hi_vec), .gnt(g_hi), .gnt_v(v_hi),
-                                         .accept(out_ready[go] & v_hi));
-            lii_rr_arb #(.N(N_IN)) U_LO (.clk(clk), .rstn(rstn),
-                                         .req(lo_vec), .gnt(g_lo), .gnt_v(v_lo),
-                                         .accept(out_ready[go] & ~v_hi & v_lo));
+            lii_arbiter #(.N(N_IN)) U_HI (.clk(clk), .rstn(rstn),
+                                      .req(hi_vec), .gnt(g_hi), .gnt_v(v_hi),
+                                      .accept(out_ready[go] & v_hi));
+            lii_arbiter #(.N(N_IN)) U_LO (.clk(clk), .rstn(rstn),
+                                      .req(lo_vec), .gnt(g_lo), .gnt_v(v_lo),
+                                      .accept(out_ready[go] & ~v_hi & v_lo));
 
             wire [N_IN-1:0] g_vec = v_hi ? g_hi : g_lo;
             assign grant_v[go] = v_hi | v_lo;

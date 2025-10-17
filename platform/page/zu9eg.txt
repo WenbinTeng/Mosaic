@@ -1,4 +1,3 @@
-# puts $fp [join [get_tiles] "\n"]
 GTH_DA7_TERM_L_TERM_T_X0Y419
 GTH_QUAD_LEFT_TERM_T_X0Y419
 NULL_X2Y434

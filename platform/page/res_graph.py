@@ -1,5 +1,4 @@
 import sys
-import os
 import re
 from typing import Dict, Iterable, List, Tuple
 
@@ -15,17 +14,15 @@ CATEGORY_MAP = {
     "DSP":   "DSP",
 }
 
-class ResourceGraph:
-    MIN_X = 0
-    MAX_X = sys.maxsize
-    MIN_Y = 0
-    MAX_Y = sys.maxsize
-    
-    def __init__(self):
+class ResGraph:
+    def __init__(self, device: str = "platform/page/zu9eg.txt"):
         self._points: List[Tuple[int,int,str]] = []  # (x,y,cat)
         self._W = 0
         self._H = 0
         self._psum = {'CLB': None, 'BRAM': None, 'DSP': None}
+        tiles = self.load_device(device)
+        self.add_many(tiles)
+        self.build()
 
     def parse_tile_name(self, name: str) -> Tuple[int,int,str]:
         m = TILE_RE.match(name.strip())
@@ -61,7 +58,8 @@ class ResourceGraph:
         for n in names:
             self.add_tile_name(n)
 
-    def load_device(self, device):
+    def load_device(self, device: str):
+        # vivado tcl command: puts $fp [join [get_tiles] "\n"]
         with open(device, "r") as d:
             return d.readlines()
 
@@ -106,13 +104,10 @@ class ResourceGraph:
 
 if __name__ == "__main__":
     if len(sys.args) < 2:
-        print("Usage: python graph.py <tiles.txt> [--query x0 y0 x1 y1]")
+        print("Usage: python graph.py <tiles.txt> --query x0 y0 x1 y1")
         raise SystemExit(2)
-    rg = ResourceGraph()
-    tiles = rg.load_device("platform/page/zu9eg.txt")
-    rg.add_many(tiles)
-    rg.build()
-    if len(sys.argv) == 7 and sys.argv[2] == '--query':
+    elif len(sys.argv) == 7 and sys.argv[2] == '--query':
+        rg = ResGraph()
         x0,y0,x1,y1 = map(int, sys.argv[3:7])
         out = rg.query(x0,y0,x1,y1)
         print(f"Query [{x0},{y0}]..[{x1},{y1}] ->", out)
