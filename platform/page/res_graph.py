@@ -59,7 +59,9 @@ class ResGraph:
             self.add_tile_name(n)
 
     def load_device(self, device: str):
-        # vivado tcl command: puts $fp [join [get_tiles] "\n"]
+        # --------------------------------------------------------
+        #   vivado tcl command: puts $fp [join [get_tiles] "\n"]
+        # --------------------------------------------------------
         with open(device, "r") as d:
             return d.readlines()
 

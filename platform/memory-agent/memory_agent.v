@@ -65,9 +65,9 @@ module memory_agent #(
     reg [TAG_W-1:0]    tag_q;
 
     // unpack functions
-    function [1:0] f_hdr_op;   input [LII_DW-1:0] d; begin f_hdr_op = d[LII_DW-1 -: 2];      end endfunction
-    function [7:0] f_hdr_len;  input [LII_DW-1:0] d; begin f_hdr_len = d[LII_DW-1-2 -: 8];   end endfunction
-    function [2:0] f_hdr_size; input [LII_DW-1:0] d; begin f_hdr_size= d[LII_DW-1-2-8 -: 3]; end endfunction
+    function [1:0] f_hdr_op;   input [LII_DW-1:0] d; begin f_hdr_op = d[LII_DW-1 -: 2];       end endfunction
+    function [7:0] f_hdr_len;  input [LII_DW-1:0] d; begin f_hdr_len = d[LII_DW-1-2 -: 8];    end endfunction
+    function [2:0] f_hdr_size; input [LII_DW-1:0] d; begin f_hdr_size = d[LII_DW-1-2-8 -: 3]; end endfunction
     function [AXI_AW-1:0] f_hdr_addr; input [LII_DW-1:0] d; begin
         f_hdr_addr = d[LII_DW-1-2-8-3 -: AXI_AW];
     end endfunction
