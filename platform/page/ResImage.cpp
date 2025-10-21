@@ -7,15 +7,16 @@ ResImage::ResImage(const std::string &device) : _device(device) {
     ifs.open(device, std::ios::in);
     std::string tile_name;
     while (std::getline(ifs, tile_name)) {
-        parse_tile_name(tile_name);
+        parseTileName(tile_name);
     }
     ifs.close();
     build();
+    this->_deviceRes = query({0, 0, _W, _H});
 }
 
 ResImage::~ResImage() {}
 
-void ResImage::parse_tile_name(const std::string &tile_name) {
+void ResImage::parseTileName(const std::string &tile_name) {
     static const std::regex pattern(R"(^([A-Z0-9]+)(?:_[LR])?_X([0-9]+)Y([0-9]+)$)");
     std::smatch m;
     if (!std::regex_match(tile_name, m, pattern))
