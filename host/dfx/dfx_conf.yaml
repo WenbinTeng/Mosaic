@@ -1,0 +1,55 @@
+modules:
+  - name: rp0
+    insts:
+      - rp0_rm
+    partition:
+      x0: 20
+      y0: 180
+      x1: 37
+      y1: 299
+    children:
+      - name: rp00
+        insts:
+          - rp00_rm0
+          - rp00_rm1
+        partition:
+          x0: 21
+          y0: 181
+          x1: 36
+          y1: 238
+      - name: rp01
+        insts:
+          - rp01_rm0
+          - rp01_rm1
+        partition: 
+          x0: 21
+          y0: 181
+          x1: 36
+          y1: 298
+  - name: rp1
+    insts:
+      - rp1_rm
+    partition: 
+      x0: 20
+      y0: 300
+      x1: 37
+      y1: 419
+    children:
+      - name: rp10
+        insts:
+          - rp10_rm0
+          - rp10_rm1
+        partition:
+          x0: 21
+          y0: 181
+          x1: 36
+          y1: 358
+      - name: rp11
+        insts:
+          - rp11_rm0
+          - rp11_rm1
+        partition: 
+          x0: 21
+          y0: 181
+          x1: 36
+          y1: 418
