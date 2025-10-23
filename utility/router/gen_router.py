@@ -1,5 +1,5 @@
 import argparse
-import jinja2, os
+import jinja2, os, shutil
 
 DEBUG=0
 
@@ -15,7 +15,7 @@ params = {
     "TYPE_PRIO": 2,
 }
 
-tmpl_path = "./utility/router/lii_router.v.j2"
+tmpl_file = "./utility/router/lii_router.v.j2"
 output_path = "build"
 if not DEBUG:
     parser = argparse.ArgumentParser()
@@ -29,10 +29,18 @@ if not DEBUG:
     if args.N_OUT:
         params["N_OUT"]=int(args.N_OUT)
 
-tmpl = jinja2.Template(open(tmpl_path).read())
+tmpl = jinja2.Template(open(tmpl_file).read())
 dst_dir = output_path + "/router"
 dst_filename = "lii_router.v"
 os.makedirs(dst_dir, exist_ok=True)
-open(os.path.join(dst_dir, dst_filename),"w").write(
+open(os.path.join(dst_dir, dst_filename), "w").write(
     tmpl.render(params=params, 
                 module_name="lii_router"))
+
+util_files = [
+    "./utility/router/lii_arbiter.v",
+    "./utility/router/lii_fifo.v",
+    "./utility/router/lii_router_core.v"
+]
+for util_file in util_files:
+    shutil.copy2(util_file, dst_dir)
