@@ -85,96 +85,24 @@ u32 XHls_ip_Get_return(XHls_ip *InstancePtr) {
     Data = XHls_ip_ReadReg(InstancePtr->Control_BaseAddress, XHLS_IP_CONTROL_ADDR_AP_RETURN);
     return Data;
 }
-void XHls_ip_Set_input_r(XHls_ip *InstancePtr, u64 Data) {
+
+void Xhls_ip_Set_data(XHls_ip *InstancePtr, int size, char* data) {
     Xil_AssertVoid(InstancePtr != NULL);
     Xil_AssertVoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
 
-    XHls_ip_WriteReg(InstancePtr->Control_BaseAddress, XHLS_IP_CONTROL_ADDR_INPUT_R_DATA,
-                     (u32)(Data));
-    XHls_ip_WriteReg(InstancePtr->Control_BaseAddress, XHLS_IP_CONTROL_ADDR_INPUT_R_DATA + 4,
-                     (u32)(Data >> 32));
+    for (int i = 0; i < size; i++) {
+        XHls_ip_WriteReg(InstancePtr->Control_BaseAddress, XHLS_IP_CONTROL_ADDR_INPUT_DATA + i, data[i]);
+    }
 }
 
-u64 XHls_ip_Get_input_r(XHls_ip *InstancePtr) {
-    u64 Data;
-
-    Xil_AssertNonvoid(InstancePtr != NULL);
-    Xil_AssertNonvoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
-
-    Data = XHls_ip_ReadReg(InstancePtr->Control_BaseAddress, XHLS_IP_CONTROL_ADDR_INPUT_R_DATA);
-    Data += (u64)XHls_ip_ReadReg(InstancePtr->Control_BaseAddress,
-                                 XHLS_IP_CONTROL_ADDR_INPUT_R_DATA + 4)
-            << 32;
-    return Data;
-}
-
-void XHls_ip_Set_weights(XHls_ip *InstancePtr, u64 Data) {
+void Xhls_ip_Get_data(XHls_ip *InstancePtr, int size, char* data) {
     Xil_AssertVoid(InstancePtr != NULL);
     Xil_AssertVoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
 
-    XHls_ip_WriteReg(InstancePtr->Control_BaseAddress, XHLS_IP_CONTROL_ADDR_WEIGHTS_DATA,
-                     (u32)(Data));
-    XHls_ip_WriteReg(InstancePtr->Control_BaseAddress, XHLS_IP_CONTROL_ADDR_WEIGHTS_DATA + 4,
-                     (u32)(Data >> 32));
-}
-
-u64 XHls_ip_Get_weights(XHls_ip *InstancePtr) {
-    u64 Data;
-
-    Xil_AssertNonvoid(InstancePtr != NULL);
-    Xil_AssertNonvoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
-
-    Data = XHls_ip_ReadReg(InstancePtr->Control_BaseAddress, XHLS_IP_CONTROL_ADDR_WEIGHTS_DATA);
-    Data += (u64)XHls_ip_ReadReg(InstancePtr->Control_BaseAddress,
-                                 XHLS_IP_CONTROL_ADDR_WEIGHTS_DATA + 4)
-            << 32;
-    return Data;
-}
-
-void XHls_ip_Set_bias(XHls_ip *InstancePtr, u64 Data) {
-    Xil_AssertVoid(InstancePtr != NULL);
-    Xil_AssertVoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
-
-    XHls_ip_WriteReg(InstancePtr->Control_BaseAddress, XHLS_IP_CONTROL_ADDR_BIAS_DATA, (u32)(Data));
-    XHls_ip_WriteReg(InstancePtr->Control_BaseAddress, XHLS_IP_CONTROL_ADDR_BIAS_DATA + 4,
-                     (u32)(Data >> 32));
-}
-
-u64 XHls_ip_Get_bias(XHls_ip *InstancePtr) {
-    u64 Data;
-
-    Xil_AssertNonvoid(InstancePtr != NULL);
-    Xil_AssertNonvoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
-
-    Data = XHls_ip_ReadReg(InstancePtr->Control_BaseAddress, XHLS_IP_CONTROL_ADDR_BIAS_DATA);
-    Data +=
-        (u64)XHls_ip_ReadReg(InstancePtr->Control_BaseAddress, XHLS_IP_CONTROL_ADDR_BIAS_DATA + 4)
-        << 32;
-    return Data;
-}
-
-void XHls_ip_Set_output_r(XHls_ip *InstancePtr, u64 Data) {
-    Xil_AssertVoid(InstancePtr != NULL);
-    Xil_AssertVoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
-
-    XHls_ip_WriteReg(InstancePtr->Control_BaseAddress, XHLS_IP_CONTROL_ADDR_OUTPUT_R_DATA,
-                     (u32)(Data));
-    XHls_ip_WriteReg(InstancePtr->Control_BaseAddress, XHLS_IP_CONTROL_ADDR_OUTPUT_R_DATA + 4,
-                     (u32)(Data >> 32));
-}
-
-u64 XHls_ip_Get_output_r(XHls_ip *InstancePtr) {
-    u64 Data;
-
-    Xil_AssertNonvoid(InstancePtr != NULL);
-    Xil_AssertNonvoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
-
-    Data = XHls_ip_ReadReg(InstancePtr->Control_BaseAddress, XHLS_IP_CONTROL_ADDR_OUTPUT_R_DATA);
-    Data += (u64)XHls_ip_ReadReg(InstancePtr->Control_BaseAddress,
-                                 XHLS_IP_CONTROL_ADDR_OUTPUT_R_DATA + 4)
-            << 32;
-    return Data;
-}
+    for (int i = 0; i < size; i++) {
+        data[i] = XHls_ip_ReadReg(InstancePtr->Control_BaseAddress, XHLS_IP_CONTROL_ADDR_INPUT_DATA + i);
+    }
+} 
 
 void XHls_ip_InterruptGlobalEnable(XHls_ip *InstancePtr) {
     Xil_AssertVoid(InstancePtr != NULL);

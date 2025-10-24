@@ -97,16 +97,8 @@ u32 XHls_ip_IsReady(XHls_ip *InstancePtr);
 void XHls_ip_EnableAutoRestart(XHls_ip *InstancePtr);
 void XHls_ip_DisableAutoRestart(XHls_ip *InstancePtr);
 u32 XHls_ip_Get_return(XHls_ip *InstancePtr);
-
-void XHls_ip_Set_input_r(XHls_ip *InstancePtr, u64 Data);
-u64 XHls_ip_Get_input_r(XHls_ip *InstancePtr);
-void XHls_ip_Set_weights(XHls_ip *InstancePtr, u64 Data);
-u64 XHls_ip_Get_weights(XHls_ip *InstancePtr);
-void XHls_ip_Set_bias(XHls_ip *InstancePtr, u64 Data);
-u64 XHls_ip_Get_bias(XHls_ip *InstancePtr);
-void XHls_ip_Set_output_r(XHls_ip *InstancePtr, u64 Data);
-u64 XHls_ip_Get_output_r(XHls_ip *InstancePtr);
-
+void Xhls_ip_Set_data(XHls_ip *InstancePtr, int size, char* data);
+void Xhls_ip_Get_data(XHls_ip *InstancePtr, int size, char* data);
 void XHls_ip_InterruptGlobalEnable(XHls_ip *InstancePtr);
 void XHls_ip_InterruptGlobalDisable(XHls_ip *InstancePtr);
 void XHls_ip_InterruptEnable(XHls_ip *InstancePtr, u32 Mask);

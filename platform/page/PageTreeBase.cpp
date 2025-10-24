@@ -56,7 +56,7 @@ int PageTreeBase::alloc(ResCount &demand) {
     int candidate = bestfit(this->_root.id, demand);
 
     if (candidate == -1) {
-        std::cout << "[ERROR]: Unable to alloc - no sparse resource." << std::endl;
+        std::cout << "  [ERROR]: Unable to alloc - no sparse resource." << std::endl;
         return -1;
     }
     while (shouldSplit(candidate, demand)) {
