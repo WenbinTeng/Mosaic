@@ -66,8 +66,7 @@ class ResImage {
     ResImage(const std::string &device);
     ~ResImage();
     ResCount query(Rect r);
-    int getW() { return this->_W; }
-    int getH() { return this->_H; }
+    Rect getRect() { return {0, 0, this->_W, this->_H}; }
     ResCount getRes() { return this->_deviceRes; }
 };
 

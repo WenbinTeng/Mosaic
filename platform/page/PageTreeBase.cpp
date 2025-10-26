@@ -2,8 +2,7 @@
 
 PageTreeBase::PageTreeBase() {
     this->_resImage = ResImage();
-    this->_root = PageNode(this->allocId(), {0, 0, this->_resImage.getW(), this->_resImage.getH()},
-                           this->_resImage.getRes(), -1);
+    this->_root = PageNode(this->allocId(), this->_resImage.getRect(), this->_resImage.getRes(), -1);
     this->_nodes[this->_root.id] = &(this->_root);
 }
 
