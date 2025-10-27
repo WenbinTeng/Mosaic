@@ -12,7 +12,7 @@ Modern FPGA cloud platforms often suffer from low resource utilization due to co
 - Separate stream transmission: through a on-chip fat-tree structure.
 - Compilation time trade-off: through dual-level paging optimization.
 
-Mosaic serves as a foundation for exploring FPGA multi-tenancy**, **serverless acceleration, and runtime resource optimization.
+Mosaic serves as a foundation for exploring FPGA multi-tenancy, serverless acceleration, and runtime resource optimization.
 
 ---
 
