@@ -1,8 +1,5 @@
 `timescale 1ns/1ps
 
-`include "platform/router/lii_arbiter.v"
-`include "platform/router/lii_fifo.v"
-
 module lii_router_core #(
     parameter integer N_IN        = 4,
     parameter integer N_OUT       = 2,
