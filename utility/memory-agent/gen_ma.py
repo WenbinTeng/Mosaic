@@ -1,7 +1,7 @@
 import argparse
 import jinja2, os
 
-DEBUG=1
+DEBUG=0
 
 params = {
     "aximm": {
