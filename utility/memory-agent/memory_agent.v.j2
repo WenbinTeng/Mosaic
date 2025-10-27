@@ -1,9 +1,9 @@
 `timescale 1ns/1ps
 
 module memory_agent #(
-    parameter integer AXI_AW = 48,
-    parameter integer AXI_DW = 128,
-    parameter integer LII_DW = 256,
+    parameter integer AXI_AW = {{params.aximm.addr_w}},
+    parameter integer AXI_DW = {{params.aximm.data_w}},
+    parameter integer LII_DW = {{params.lii_top}},
     parameter integer TAG_W  = 8
 )(
     input  wire                   clk,

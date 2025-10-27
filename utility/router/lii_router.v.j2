@@ -1,15 +1,15 @@
 `timescale 1ns/1ps
 
 module {{ module_name }} #(
-    parameter integer N_IN       = {{ params.N_IN }},
-    parameter integer N_OUT      = {{ params.N_OUT }},
-    parameter integer DW         = {{ params.DW }},
-    parameter integer SRC_W      = {{ params.SRC_W }},
-    parameter integer DST_W      = {{ params.DST_W }},
-    parameter integer TYPE_W     = {{ params.TYPE_W }},
-    parameter integer ROUTE_MSB  = {{ params.ROUTE_MSB }},
-    parameter integer FIFO_DEPTH = {{ params.FIFO_DEPTH }},
-    parameter integer TYPE_PRIO  = {{ params.TYPE_PRIO }}
+    parameter integer N_IN       = {{params.N_IN}},
+    parameter integer N_OUT      = {{params.N_OUT}},
+    parameter integer DW         = {{params.DW}},
+    parameter integer SRC_W      = {{params.SRC_W}},
+    parameter integer DST_W      = {{params.DST_W}},
+    parameter integer TYPE_W     = {{params.TYPE_W}},
+    parameter integer ROUTE_MSB  = {{params.ROUTE_MSB}},
+    parameter integer FIFO_DEPTH = {{params.FIFO_DEPTH}},
+    parameter integer TYPE_PRIO  = {{params.TYPE_PRIO}}
 )(
     input  wire clk,
     input  wire rstn,

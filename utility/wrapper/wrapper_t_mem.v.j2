@@ -1,9 +1,9 @@
 `timescale 1ns/1ps
 
 module {{module_name}} #(
-    parameter AXI_AW = {{ aximm.addr_w }},
-    parameter AXI_DW = {{ aximm.data_w }},
-    parameter LII_DW = {{ packing }}
+    parameter AXI_AW = {{aximm.addr_w}},
+    parameter AXI_DW = {{aximm.data_w}},
+    parameter LII_DW = {{packing}}
 )(
     // ---------- clock and reset ----------
     input  wire                 clk,
