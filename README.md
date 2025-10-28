@@ -18,7 +18,15 @@ Mosaic serves as a foundation for exploring FPGA multi-tenancy, serverless accel
 
 ### How to Use
 
-Generate wrappers for user HLS-designed kernels:
+##### For tenants
+
+1. Develop your hardware accelerator kernels using Xilinx Vitis HLS. For optimal performance, use AXI-Stream interfaces for inter-kernel communication and AXI-Memory-Mapped interfaces for memory access.
+2. Compile the designed kernels in Xilinx Vitis HLS and export RTL.
+3. Submit the exported RTL IPs and task graph definition to the vendor for integration into the framework.
+
+##### For vendors
+
+1. Generate wrappers for user HLS-designed kernels:
 
 ```bash
 # for single file
@@ -30,7 +38,7 @@ python utility/wrapper/gen_wrapper.py \
 bash scripts/auto_wrap.sh <config firectory> <output directory>
 ```
 
-Generate latency-insensitive interface router used in micro-service region:
+2. Generate latency-insensitive interface router used in micro-service region:
 
 ```bash
 python utility/router/gen_router.py \
@@ -39,18 +47,20 @@ python utility/router/gen_router.py \
 	--output <output path>
 ```
 
-Generate memory agent used in top service region:
+3. Generate memory agent used in top service region:
 
 ```bash
 python utility/memory-agent/gen_ma.py \
 	--output <output path>
 ```
 
-Generate tcl scripts for Xilinx Dynamic Function eXchange (DFX) flow:
+4. Generate tcl scripts for Xilinx Dynamic Function eXchange (DFX) flow:
 
 ```bash
 python host/dfx/gen_tcl.py
 ```
+
+5. Submit user application using scheduler's API.
 
 ---
 
