@@ -1,0 +1,276 @@
+module mmu_axi #(
+    parameter integer ADDR_WIDTH   = {{params.aximm.addr_w}},
+    parameter integer DATA_WIDTH   = {{params.aximm.data_w}}
+)(
+    input  wire                         clk,
+    input  wire                         rstn,
+
+    // -------- Slave side (from memory agent) --------
+    input  wire [3:0]               s_axi_awid,
+    input  wire [ADDR_WIDTH-1:0]    s_axi_awaddr,
+    input  wire [7:0]               s_axi_awlen,
+    input  wire [2:0]               s_axi_awsize,
+    input  wire [1:0]               s_axi_awburst,
+    input  wire                     s_axi_awvalid,
+    output wire                     s_axi_awready,
+
+    input  wire [DATA_WIDTH-1:0]    s_axi_wdata,
+    input  wire [DATA_WIDTH/8-1:0]  s_axi_wstrb,
+    input  wire                     s_axi_wlast,
+    input  wire                     s_axi_wvalid,
+    output wire                     s_axi_wready,
+
+    output wire [3:0]               s_axi_bid,
+    output wire [1:0]               s_axi_bresp,
+    output wire                     s_axi_bvalid,
+    input  wire                     s_axi_bready,
+
+    input  wire [3:0]               s_axi_arid,
+    input  wire [ADDR_WIDTH-1:0]    s_axi_araddr,
+    input  wire [7:0]               s_axi_arlen,
+    input  wire [2:0]               s_axi_arsize,
+    input  wire [1:0]               s_axi_arburst,
+    input  wire                     s_axi_arvalid,
+    output wire                     s_axi_arready,
+
+    output wire [3:0]               s_axi_rid,
+    output wire [DATA_WIDTH-1:0]    s_axi_rdata,
+    output wire [1:0]               s_axi_rresp,
+    output wire                     s_axi_rlast,
+    output wire                     s_axi_rvalid,
+    input  wire                     s_axi_rready,
+
+    // -------- Master side (to shell) --------
+    output wire [3:0]               m_axi_awid,
+    output wire [ADDR_WIDTH-1:0]    m_axi_awaddr,
+    output wire [7:0]               m_axi_awlen,
+    output wire [2:0]               m_axi_awsize,
+    output wire [1:0]               m_axi_awburst,
+    output wire                     m_axi_awvalid,
+    input  wire                     m_axi_awready,
+
+    output wire [DATA_WIDTH-1:0]    m_axi_wdata,
+    output wire [DATA_WIDTH/8-1:0]  m_axi_wstrb,
+    output wire                     m_axi_wlast,
+    output wire                     m_axi_wvalid,
+    input  wire                     m_axi_wready,
+
+    input  wire [3:0]               m_axi_bid,
+    input  wire [1:0]               m_axi_bresp,
+    input  wire                     m_axi_bvalid,
+    output wire                     m_axi_bready,
+
+    output wire [3:0]               m_axi_arid,
+    output wire [ADDR_WIDTH-1:0]    m_axi_araddr,
+    output wire [7:0]               m_axi_arlen,
+    output wire [2:0]               m_axi_arsize,
+    output wire [1:0]               m_axi_arburst,
+    output wire                     m_axi_arvalid,
+    input  wire                     m_axi_arready,
+
+    input  wire [3:0]               m_axi_rid,
+    input  wire [DATA_WIDTH-1:0]    m_axi_rdata,
+    input  wire [1:0]               m_axi_rresp,
+    input  wire                     m_axi_rlast,
+    input  wire                     m_axi_rvalid,
+    output wire                     m_axi_rready
+);
+
+    // ----------------------------------------------------------------
+    // Static mapping table.
+    // Edit these parameters for your system.
+    // Region i covers [VIRT_BASE_i , VIRT_BASE_i + SIZE_i)
+    // and maps it to [PHYS_BASE_i , PHYS_BASE_i + SIZE_i)
+    // ----------------------------------------------------------------
+    {%- for r in params.regions %}
+    localparam [ADDR_WIDTH-1:0] VIRT_BASE_{{loop.index0}} = {{r.virt_base}};
+    localparam [ADDR_WIDTH-1:0] PHYS_BASE_{{loop.index0}} = {{r.phys_base}};
+    localparam [ADDR_WIDTH-1:0] SIZE_{{loop.index0}}      = {{r.size}};
+    {%- endfor %}
+
+    // ----------------------------------------------------------------
+    // address_translate
+    // Finds first hit region and applies base translation
+    // If no hit, flag fault. here we route fault as DECERR (2'b11)
+    // ----------------------------------------------------------------
+    function [ADDR_WIDTH-1:0] do_translate_addr;
+        input [ADDR_WIDTH-1:0] vaddr;
+        begin
+            // default unmapped value
+            do_translate_addr = {ADDR_WIDTH{1'b1}};
+            {% for r in regions %}
+            if ((vaddr >= VIRT_BASE_{{loop.index0}}) &&
+                (vaddr < (VIRT_BASE_{{loop.index0}} + SIZE_{{loop.index0}}))) begin
+                    do_translate_addr = vaddr - VIRT_BASE_{{loop.index0}} + PHYS_BASE_{{loop.index0}};
+            end
+            {% endfor %}
+        end
+    endfunction
+
+    function fault_addr;
+        input [ADDR_WIDTH-1:0] vaddr;
+        reg hit_any;
+        begin
+            hit_any = 1'b0;
+            {% for r in regions %}
+            if ((vaddr >= VIRT_BASE_{{loop.index0}}) &&
+                (vaddr <  (VIRT_BASE_{{loop.index0}} + SIZE_{{loop.index0}}))) begin
+                    hit_any = 1'b1;
+            end
+            {% endfor %}
+            fault_addr = !hit_any;
+        end
+    endfunction
+
+    // ----------------------------------------------------------------
+    // Simple pass-through handshakes with single-stage registers
+    // We capture AW/AR so response channel knows if it was faulted.
+    // ----------------------------------------------------------------
+
+    // Write address channel regs
+    reg [3:0]               awid_q;
+    reg [ADDR_WIDTH-1:0]    awaddr_q;
+    reg [7:0]               awlen_q;
+    reg [2:0]               awsize_q;
+    reg [1:0]               awburst_q;
+    reg                     awvalid_q;
+    reg                     awfault_q;
+
+    wire aw_fire = s_axi_awvalid && s_axi_awready;
+
+    // Read address channel regs
+    reg [3:0]               arid_q;
+    reg [ADDR_WIDTH-1:0]    araddr_q;
+    reg [7:0]               arlen_q;
+    reg [2:0]               arsize_q;
+    reg [1:0]               arburst_q;
+    reg                     arvalid_q;
+    reg                     arfault_q;
+
+    wire ar_fire = s_axi_arvalid && s_axi_arready;
+
+    // Handshake logic: ready when buffer empty or downstream ready
+    assign s_axi_awready = (!awvalid_q) || (m_axi_awready && awvalid_q);
+    assign s_axi_arready = (!arvalid_q) || (m_axi_arready && arvalid_q);
+
+    // Capture address requests
+    always @(posedge clk) begin
+        if (!rstn) begin
+            awvalid_q <= 1'b0;
+            arvalid_q <= 1'b0;
+            awfault_q <= 1'b0;
+            arfault_q <= 1'b0;
+        end else begin
+            // AW
+            if (aw_fire) begin
+                awid_q    <= s_axi_awid;
+                awaddr_q  <= do_translate_addr(s_axi_awaddr);
+                awlen_q   <= s_axi_awlen;
+                awsize_q  <= s_axi_awsize;
+                awburst_q <= s_axi_awburst;
+                awvalid_q <= 1'b1;
+                awfault_q <= fault_addr(s_axi_awaddr);
+            end else if (m_axi_awready && awvalid_q) begin
+                awvalid_q <= 1'b0;
+            end
+            // AR
+            if (ar_fire) begin
+                arid_q    <= s_axi_arid;
+                araddr_q  <= do_translate_addr(s_axi_araddr);
+                arlen_q   <= s_axi_arlen;
+                arsize_q  <= s_axi_arsize;
+                arburst_q <= s_axi_arburst;
+                arvalid_q <= 1'b1;
+                arfault_q <= fault_addr(s_axi_araddr);
+            end else if (m_axi_arready && arvalid_q) begin
+                arvalid_q <= 1'b0;
+            end
+        end
+    end
+
+    // Drive master AW/AR
+    assign m_axi_awid    = awid_q;
+    assign m_axi_awaddr  = awaddr_q;
+    assign m_axi_awlen   = awlen_q;
+    assign m_axi_awsize  = awsize_q;
+    assign m_axi_awburst = awburst_q;
+    assign m_axi_awvalid = awvalid_q && !awfault_q; // block illegal
+
+    assign m_axi_arid    = arid_q;
+    assign m_axi_araddr  = araddr_q;
+    assign m_axi_arlen   = arlen_q;
+    assign m_axi_arsize  = arsize_q;
+    assign m_axi_arburst = arburst_q;
+    assign m_axi_arvalid = arvalid_q && !arfault_q; // block illegal
+
+    // ----------------------------------------------------------------
+    // Write data channel
+    // Pass-through. We backpressure if write address faulted because we will not forward W.
+    // ----------------------------------------------------------------
+    assign s_axi_wready = m_axi_wready && !awfault_q;
+    assign m_axi_wdata  = s_axi_wdata;
+    assign m_axi_wstrb  = s_axi_wstrb;
+    assign m_axi_wlast  = s_axi_wlast;
+    assign m_axi_wvalid = s_axi_wvalid && !awfault_q;
+
+    // ----------------------------------------------------------------
+    // Write response channel
+    // If fault we synthesize DECERR without touching downstream.
+    // Otherwise pass-through downstream BRESP.
+    // ----------------------------------------------------------------
+    reg         fault_bvalid_q;
+    reg [3:0]   fault_bid_q;
+
+    wire w_fire_last = s_axi_wvalid && s_axi_wready && s_axi_wlast;
+
+    always @(posedge clk) begin
+        if (!rstn) begin
+            fault_bvalid_q <= 1'b0;
+        end else begin
+            // start fault response when illegal write completes data phase
+            if (w_fire_last && awfault_q) begin
+                fault_bvalid_q <= 1'b1;
+                fault_bid_q    <= awid_q;
+            end else if (fault_bvalid_q && s_axi_bready) begin
+                fault_bvalid_q <= 1'b0;
+            end
+        end
+    end
+
+    assign m_axi_bready = s_axi_bready;
+
+    assign s_axi_bid    = awfault_q ? fault_bid_q : m_axi_bid;
+    assign s_axi_bresp  = awfault_q ? 2'b11 /* DECERR */ : m_axi_bresp;
+    assign s_axi_bvalid = awfault_q ? fault_bvalid_q : m_axi_bvalid;
+
+    // ----------------------------------------------------------------
+    // Read data channel
+    // If fault we must synthesize DECERR + zero data.
+    // We assert exactly one beat with RLAST=1.
+    // ----------------------------------------------------------------
+    reg         fault_rvalid_q;
+    reg [3:0]   fault_rid_q;
+
+    always @(posedge clk) begin
+        if (!rstn) begin
+            fault_rvalid_q <= 1'b0;
+        end else begin
+            // launch fault read response when AR accepted with fault
+            if (ar_fire && fault_addr(s_axi_araddr)) begin
+                fault_rvalid_q <= 1'b1;
+                fault_rid_q    <= s_axi_arid;
+            end else if (fault_rvalid_q && s_axi_rready) begin
+                fault_rvalid_q <= 1'b0;
+            end
+        end
+    end
+
+    assign m_axi_rready = s_axi_rready;
+
+    assign s_axi_rid    = arfault_q ? fault_rid_q : m_axi_rid;
+    assign s_axi_rdata  = arfault_q ? {DATA_WIDTH{1'b0}} : m_axi_rdata;
+    assign s_axi_rresp  = arfault_q ? 2'b11 /* DECERR */ : m_axi_rresp;
+    assign s_axi_rlast  = arfault_q ? 1'b1 : m_axi_rlast;
+    assign s_axi_rvalid = arfault_q ? fault_rvalid_q : m_axi_rvalid;
+
+endmodule

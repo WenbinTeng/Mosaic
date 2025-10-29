@@ -54,13 +54,20 @@ python utility/memory-agent/gen_ma.py \
 	--output <output path>
 ```
 
-4. Generate tcl scripts for Xilinx Dynamic Function eXchange (DFX) flow:
+4. Generate memory management unit in top service region:
+
+```bash
+python utility/memory-management-unit/gen_mmu.py \
+	--output <output path>
+```
+
+5. Generate tcl scripts for Xilinx Dynamic Function eXchange (DFX) flow:
 
 ```bash
 python host/dfx/gen_tcl.py
 ```
 
-5. Submit user application using scheduler's API.
+6. Submit user application using scheduler's API.
 
 ---
 
