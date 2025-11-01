@@ -8,7 +8,7 @@
 
 Modern FPGA cloud platforms often suffer from low resource utilization due to coarse-grained partitioning and long reconfiguration overhead. Mosaic addresses these challenges by introducing:
 
-- Hierarchical resource management: based on a tree-strutted allocator.
+- **Hierarchical** reconfigurable resource management: based on a tree-strutted allocator.
 - Separate stream transmission: through a on-chip fat-tree structure.
 - Compilation time trade-off: through dual-level paging optimization.
 
@@ -20,9 +20,28 @@ Mosaic serves as a foundation for exploring FPGA multi-tenancy, serverless accel
 
 ##### For tenants
 
-1. Develop your hardware accelerator kernels using Xilinx Vitis HLS. For optimal performance, use AXI-Stream interfaces for inter-kernel communication and AXI-Memory-Mapped interfaces for memory access.
-2. Compile the designed kernels in Xilinx Vitis HLS and export RTL.
-3. Submit the exported RTL IPs and task graph definition to the vendor for integration into the framework.
+1. Develop your hardware accelerator kernels using Xilinx Vitis HLS. 
+
+    - Use AXI-Stream interfaces for kernel-to-kernel communication. In HLS, we can use the INTERFACE pragma to bind an interface and implement it with stream FIFO.
+
+      ```c
+      #pragma HLS interface mode=axis port=<name> [OPTIONS]
+      ```
+
+   - Use AXI-Memory-Mapped interfaces for memory access. Likewise, in HLS, we can bind an interface to AXI using the INTERFACE pragma.
+
+     ```c
+     #pragma HLS interface mode=m_axi port=<name> offset=slave bundle=data [OPTIONS]
+     ```
+
+2. Synthesize and export the kernels as RTL IP cores through Vitis HLS.
+3. Prepare a task graph description (e.g., in JSON or YAML) that defines the dataflow dependencies among kernels, including:
+   - Kernel file
+   - Batch size
+   - Post-synthesized resource estimation
+   - Dependency list for every kernel
+   - ...
+4. Submit the exported IPs and task graph to the vendor for integration into the Tetris framework.
 
 ##### For vendors
 
@@ -68,6 +87,22 @@ python host/dfx/gen_tcl.py
 ```
 
 6. Submit user application using scheduler's API.
+
+---
+
+### Experimental Environment
+
+Software
+
+- Windows 11
+- AMD Vivado Design Suite 2023.2
+- AMD Vitis HLS 2023.2
+- AMD Vitis 2023.2
+
+Hardware
+
+- AMD Ryzen 9 5900X with 64GB RAM
+- AMD Zynq UltraScale+ MPSoC ZCU102 Evaluation Kit
 
 ---
 
