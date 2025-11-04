@@ -31,7 +31,7 @@ class PageTreeBase {
     double bestfitScore(int nodeId, ResCount &demand);
     int bestfit(int nodeId, ResCount &demand);
     virtual bool shouldSplit(int nodeId, ResCount &demand) = 0;
-    virtual std::vector<Rect> rectSplt(int nodeId, ResCount &demand) = 0;
+    virtual std::vector<Rect> rectSplit(int nodeId, ResCount &demand) = 0;
     virtual void split(int nodeId, ResCount &demand) = 0;
     virtual void merge(int nodeId) = 0;
 

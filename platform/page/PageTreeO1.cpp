@@ -11,7 +11,7 @@ bool PageTreeO1::shouldSplit(int nodeId, ResCount &demand) {
         && pnode->resCount.BRAM * 0.5 >= demand.BRAM;
 }
 
-std::vector<Rect> PageTreeO1::rectSplt(int nodeId, ResCount &demand) {
+std::vector<Rect> PageTreeO1::rectSplit(int nodeId, ResCount &demand) {
     PageNode *pnode = this->_nodes[nodeId];
     auto [x0, y0, x1, y1] = pnode->rect;
     int w = pnode->rect.getW();
@@ -28,7 +28,7 @@ std::vector<Rect> PageTreeO1::rectSplt(int nodeId, ResCount &demand) {
 void PageTreeO1::split(int nodeId, ResCount &demand) {
     PageNode *pnode = this->_nodes[nodeId];
     assert(pnode->isFree());
-    std::vector<Rect> subregions = rectSplt(nodeId, demand);
+    std::vector<Rect> subregions = rectSplit(nodeId, demand);
     for (Rect region : subregions) {
         PageNode *newNode = new PageNode(this->allocId(), region, this->_resImage.query(region), nodeId);
         this->_nodes[newNode->id] = newNode;

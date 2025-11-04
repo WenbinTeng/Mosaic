@@ -8,7 +8,7 @@
 class PageTreeO1 : public PageTreeBase {
   protected:
     bool shouldSplit(int nodeId, ResCount &demand) override;
-    std::vector<Rect> rectSplt(int nodeId, ResCount &demand) override;
+    std::vector<Rect> rectSplit(int nodeId, ResCount &demand) override;
     void split(int nodeId, ResCount &demand) override;
     void merge(int nodeId) override;
 
