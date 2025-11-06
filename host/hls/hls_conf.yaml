@@ -1,0 +1,51 @@
+functions:
+  - name: conv1
+    source_path:
+    - "app/lenet/kernel/config.h"
+    - "app/lenet/kernel/conv1.cpp"
+    - "app/lenet/kernel/conv1.hpp"
+  - name: conv2
+    source_path:
+    - "app/lenet/kernel/config.h"
+    - "app/lenet/kernel/conv2.cpp"
+    - "app/lenet/kernel/conv2.hpp"
+  - name: fc1
+    source_path:
+    - "app/lenet/kernel/config.h"
+    - "app/lenet/kernel/fc1.cpp"
+    - "app/lenet/kernel/fc1.hpp"
+  - name: fc2
+    source_path:
+    - "app/lenet/kernel/config.h"
+    - "app/lenet/kernel/fc2.cpp"
+    - "app/lenet/kernel/fc2.hpp"
+  - name: fc3
+    source_path:
+    - "app/lenet/kernel/config.h"
+    - "app/lenet/kernel/fc3.cpp"
+    - "app/lenet/kernel/fc3.hpp"
+  - name: pool1
+    source_path:
+    - "app/lenet/kernel/config.h"
+    - "app/lenet/kernel/pool1.cpp"
+    - "app/lenet/kernel/pool1.hpp"
+  - name: pool2
+    source_path:
+    - "app/lenet/kernel/config.h"
+    - "app/lenet/kernel/pool2.cpp"
+    - "app/lenet/kernel/pool2.hpp"
+  - name: pool3
+    source_path:
+    - "app/lenet/kernel/config.h"
+    - "app/lenet/kernel/pool3.cpp"
+    - "app/lenet/kernel/pool3.hpp"
+  - name: top_in
+    source_path:
+    - "app/lenet/kernel/config.h"
+    - "app/lenet/kernel/top_in.cpp"
+    - "app/lenet/kernel/top_in.hpp"
+  - name: top_out
+    source_path:
+    - "app/lenet/kernel/config.h"
+    - "app/lenet/kernel/top_out.cpp"
+    - "app/lenet/kernel/top_out.hpp"
