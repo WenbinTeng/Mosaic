@@ -22,71 +22,115 @@ Mosaic serves as a foundation for exploring FPGA multi-tenancy, serverless accel
 
 1. Develop your hardware accelerator kernels using Xilinx Vitis HLS. 
 
-    - Use AXI-Stream interfaces for kernel-to-kernel communication. In HLS, we can use the INTERFACE pragma to bind an interface and implement it with stream FIFO.
+   - Use AXI-Stream interfaces for kernel-to-kernel communication. In HLS, we can use the INTERFACE pragma to bind an interface and implement it with stream FIFO.
 
-      ```c
-      #pragma HLS interface mode=axis port=<name> [OPTIONS]
-      ```
+     ```c++
+     #pragma HLS interface mode=axis port=<name> [OPTIONS]
+     ```
+
+     For example, the `myfun` kernel:
+
+     ```c++
+     void myfun(
+       hls::stream<din_t>& in_stream,
+       hls::stream<dout_t>& out_stream
+     ) {
+     #pragma HLS INTERFACE ap_ctrl_none port=return
+     #pragma HLS INTERFACE axis port=in_stream
+     #pragma HLS INTERFACE axis port=out_stream
+       ...
+     }
+     ```
 
    - Use AXI-Memory-Mapped interfaces for memory access. Likewise, in HLS, we can bind an interface to AXI using the INTERFACE pragma.
 
-     ```c
+     ```c++
      #pragma HLS interface mode=m_axi port=<name> offset=slave bundle=data [OPTIONS]
      ```
+     
+     For example, the `top` kernel:
+     
+     ```c++
+     void top(
+     	din_t in_data[IN_SIZE],
+       dout_t out_data[OUT_SIZE]
+     ) {
+     #pragma HLS INTERFACE ap_ctrl_none port=return
+     #pragma HLS INTERFACE m_axi port=in_data offset=slave bundle=data
+     #pragma HLS INTERFACE m_axi port=out_data offset=slave bundle=data
+     	... 
+     }
+     ```
 
-2. Synthesize and export the kernels as RTL IP cores through Vitis HLS.
-3. Prepare a task graph description (e.g., in JSON or YAML) that defines the dataflow dependencies among kernels, including:
+2. Prepare a task graph definition in YAML format that defines the dataflow dependencies among kernels, including:
+
    - Kernel file
    - Batch size
    - Post-synthesized resource estimation
    - Dependency list for every kernel
    - ...
-4. Submit the exported IPs and task graph to the vendor for integration into the Tetris framework.
+
+   An example definition can be seen in [lenet graph](app/lenet/kernel/graph.yaml).
+
+3. Submit.
 
 ##### For vendors
 
-1. Generate wrappers for user HLS-designed kernels:
+1. Generate tcl scripts for HLS synthesizing.
 
-```bash
-# for single file
-python utility/wrapper/gen_wrapper.py \
-	--config <yaml file> \
-	--output <output path>
+   ```bash
+   python host/hls/gen_tcl.py \
+   	--output <output_path>
+   ```
 
-# for directory
-bash scripts/auto_wrap.sh <config firectory> <output directory>
-```
+   Synthesize and export the kernels as RTL IP cores using Vitis HLS.
 
-2. Generate latency-insensitive interface router used in micro-service region:
+   ```bash
+   cd <output_path>
+   vitis_hls run_all.tcl
+   ```
 
-```bash
-python utility/router/gen_router.py \
-	--N_IN <number of LII input> \
-	--N_OUT <number of LII output> \
-	--output <output path>
-```
+2. Generate wrappers for user HLS kernels:
 
-3. Generate memory agent used in top service region:
+    ```bash
+    # for single file
+    python utility/wrapper/gen_wrapper.py \
+      --config <yaml file> \
+      --output <output path>
+    # OR for directory
+    bash scripts/auto_wrap.sh <config firectory> <output directory>
+    ```
+    
+3. Generate latency-insensitive interface router used in micro-service region:
 
-```bash
-python utility/memory-agent/gen_ma.py \
-	--output <output path>
-```
+    ```bash
+    python utility/router/gen_router.py \
+      --N_IN <number of LII input> \
+      --N_OUT <number of LII output> \
+      --output <output path>
+    ```
 
-4. Generate memory management unit in top service region:
+4. Generate memory agent used in top service region:
 
-```bash
-python utility/memory-management-unit/gen_mmu.py \
-	--output <output path>
-```
+    ```bash
+    python utility/memory-agent/gen_ma.py \
+      --output <output path>
+    ```
 
-5. Generate tcl scripts for Xilinx Dynamic Function eXchange (DFX) flow:
+5. Generate memory management unit in top service region:
 
-```bash
-python host/dfx/gen_tcl.py
-```
+    ```bash
+    python utility/memory-management-unit/gen_mmu.py \
+      --output <output path>
+    ```
 
-6. Submit user application using scheduler's API.
+6. Generate tcl scripts for Xilinx Dynamic Function eXchange (DFX) flow:
+
+    ```bash
+    python host/dfx/gen_tcl.py
+    ```
+
+7. Submit user application using scheduler's API.
 
 ---
 

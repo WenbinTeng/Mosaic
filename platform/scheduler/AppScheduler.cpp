@@ -8,6 +8,51 @@ int AppScheduler::allocId() {
     return this->_nextId++;
 }
 
+TaskGraph AppScheduler::parseFromYaml(const std::string& yamlPath) {
+    TaskGraph graph;
+    YAML::Node node = YAML::LoadFile(yamlPath);
+    std::unordered_map<int, Task*> dict;
+    std::vector<std::vector<int>> depend;
+
+    for (auto taskInfo : node["tasks"]) {
+        auto task = new Task;
+        task->kernelId       = taskInfo["kernel_id"].as<int>();
+        task->kernelFileSize = taskInfo["kernel_file_size"].as<int>();
+        task->kernelFileName = taskInfo["kernel_file_name"].as<std::string>();
+        task->totalBatch     = taskInfo["total_batch"].as<int>();
+        task->completedBatch = 0;
+        task->rescount       = ResCount(
+            taskInfo["resource_count"]["CLB"].as<int>(),
+            taskInfo["resource_count"]["DSP"].as<int>(),
+            taskInfo["resource_count"]["BRAM"].as<int>()
+        );
+        int global_i = 0;
+        for (auto argc: taskInfo["arg_count"]) {
+            task->size.push_back(argc.as<int>());
+        }
+        for (auto i : task->size) {
+            std::vector<std::any> arg;
+            for (int j = 0; j < i; j++) {
+                arg.push_back(taskInfo["arg_value"][global_i++].as<int>());
+            }
+            task->args.push_back(arg);
+        }
+        dict[task->kernelId] = task;
+    }
+
+    for (auto taskInfo : node["tasks"]) {
+        int srcId = taskInfo["kernel_id"].as<int>();
+        Task *srcTask = dict[srcId];
+        for (auto id : taskInfo["depend_task_id"]) {
+            int dstId = id.as<int>();
+            Task *dstTask = dict[dstId];
+            graph.dependList[srcTask].push_back(dstTask);
+        }
+    }
+
+    return graph;
+}
+
 void AppScheduler::updateState() {
     static int last;
     int runningCount = 0;

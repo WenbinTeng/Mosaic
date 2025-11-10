@@ -1,0 +1,141 @@
+tasks:
+  - kernel_id: 1
+    kernel_name: "conv1"
+    kernel_file_size: 1048576
+    kernel_file_name: "hls/hls_synth_conv1/"
+    total_batch: 1
+    resource_count:
+      - CLB: 1600
+      - DSP: 8
+      - BRAM: 32
+    arg_count: 
+      - 0
+    arg_value: 
+      - 0
+    depend_task_id:
+      - 8
+  - kernel_id: 2
+    kernel_name: "conv2"
+    kernel_file_size: 1048576
+    kernel_file_name: "hls/hls_synth_conv2/"
+    total_batch: 1
+    resource_count:
+      - CLB: 1600
+      - DSP: 8
+      - BRAM: 32
+    arg_count: 
+      - 0
+    arg_value: 
+      - 0
+    depend_task_id:
+      - 6
+  - kernel_id: 3
+    kernel_name: "fc1"
+    kernel_file_size: 1048576
+    kernel_file_name: "hls/hls_synth_fc1/"
+    total_batch: 1
+    resource_count:
+      - CLB: 1600
+      - DSP: 8
+      - BRAM: 32
+    arg_count: 
+      - 0
+    arg_value: 
+      - 0
+    depend_task_id:
+      - 7
+  - kernel_id: 4
+    kernel_name: "fc2"
+    kernel_file_size: 1048576
+    kernel_file_name: "hls/hls_synth_fc2/"
+    total_batch: 1
+    resource_count:
+      - CLB: 1600
+      - DSP: 8
+      - BRAM: 32
+    arg_count: 
+      - 0
+    arg_value: 
+      - 0
+    depend_task_id:
+      - 3
+  - kernel_id: 5
+    kernel_name: "fc3"
+    kernel_file_size: 1048576
+    kernel_file_name: "hls/hls_synth_fc3/"
+    total_batch: 1
+    resource_count:
+      - CLB: 1600
+      - DSP: 8
+      - BRAM: 32
+    arg_count: 
+      - 0
+    arg_value: 
+      - 0
+    depend_task_id:
+      - 4
+  - kernel_id: 6
+    kernel_name: "pool1"
+    kernel_file_size: 1048576
+    kernel_file_name: "hls/hls_synth_pool1/"
+    total_batch: 1
+    resource_count:
+      - CLB: 1600
+      - DSP: 8
+      - BRAM: 32
+    arg_count: 
+      - 0
+    arg_value: 
+      - 0
+    depend_task_id:
+      - 1
+  - kernel_id: 7
+    kernel_name: "pool2"
+    kernel_file_size: 1048576
+    kernel_file_name: "hls/hls_synth_pool2/"
+    total_batch: 1
+    resource_count:
+      - CLB: 1600
+      - DSP: 8
+      - BRAM: 32
+    arg_count: 
+      - 0
+    arg_value: 
+      - 0
+    depend_task_id:
+      - 2
+  - kernel_id: 8
+    kernel_name: "top_in"
+    kernel_file_size: 1048576
+    kernel_file_name: "hls/hls_synth_top_in/"
+    total_batch: 1
+    resource_count:
+      - CLB: 1600
+      - DSP: 8
+      - BRAM: 32
+    arg_count: 
+      - 0
+    arg_value: 
+      - 0
+  - kernel_id: 9
+    kernel_name: "top_out"
+    kernel_file_size: 1048576
+    kernel_file_name: "hls/hls_synth_top_out/"
+    total_batch: 1
+    resource_count:
+      - CLB: 1600
+      - DSP: 8
+      - BRAM: 32
+    arg_count: 
+      - 1
+      - 2
+      - 3
+    arg_value: 
+      - 1
+      - 2
+      - 2
+      - 3
+      - 3
+      - 3
+    depend_task_id:
+      - 5

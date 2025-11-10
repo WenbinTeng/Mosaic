@@ -10,6 +10,7 @@
 #include <optional>
 #include <unordered_map>
 #include <vector>
+#include <yaml-cpp/yaml.h>
 
 #include "TaskScheduler.hpp"
 
@@ -22,6 +23,11 @@ struct App {
     TaskGraph graph;
     App(int id, int priority, AppState state, TaskGraph &graph)
         : id(id), priority(priority), state(state), graph(graph) {}
+    ~App() {
+        graph.dependList.clear();
+        for (auto task : graph.tasks)
+            delete task;
+    }
 };
 
 class AppScheduler {
@@ -30,6 +36,7 @@ class AppScheduler {
     std::unordered_map<int, std::list<App *>::iterator> _lookup;
     TaskScheduler taskScheduler;
     int _nextId = 1;
+    TaskGraph parseFromYaml(const std::string &yamlPath);
     int allocId();
     void updateState();
 

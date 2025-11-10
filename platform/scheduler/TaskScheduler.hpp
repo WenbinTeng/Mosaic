@@ -18,20 +18,24 @@
 enum class TaskState { NEW, READY, RUNNING, WAITING, TERMINATED };
 
 struct Task {
+    // runtime init
     int id;
-    int priority;
     int appId;
+    int priority;
+    // load from yaml file
     int kernelId;
     int kernelFileSize;
     std::string kernelFileName;
-    int pageNodeId;
     int totalBatch;
     int completedBatch;
-    XHls_ip *instancePtr;
-    TaskState state;
     ResCount rescount;
     std::vector<int> size;
     std::vector<std::vector<std::any>> args;
+    // runtime config
+    XHls_ip *instancePtr;
+    TaskState state;
+    int pageNodeId;
+    // override data transfer method
     virtual void transferData() {}
     bool operator<(Task &other) {
         return this->priority < other.priority;

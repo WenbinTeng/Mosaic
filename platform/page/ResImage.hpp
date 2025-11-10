@@ -34,6 +34,8 @@ struct Rect {
 
 struct ResCount {
     int CLB = 0, DSP = 0, BRAM = 0;
+    ResCount() {}
+    ResCount(int clb, int dsp, int bram) : CLB(clb), DSP(dsp), BRAM(bram) {}
     void operator+=(const ResCount &rhs) {
         this->CLB += rhs.CLB;
         this->DSP += rhs.DSP;
