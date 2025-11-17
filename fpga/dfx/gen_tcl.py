@@ -7,15 +7,15 @@ if not DEBUG:
     parser = argparse.ArgumentParser()
     args = parser.parse_args()
 
-config_path = "host/dfx/dfx_conf.yaml"
+config_path = "fpga/dfx/dfx_conf.yaml"
 output_path = "build"
 tmpl_files = [
-    "./host/dfx/synth.tcl",
-    "./host/dfx/implement_parent.tcl",
-    "./host/dfx/subdivide_children.tcl",
-    "./host/dfx/implement_children.tcl",
-    "./host/dfx/verify_configurations.tcl",
-    "./host/dfx/generate_all_bitstreams.tcl",
+    "./fpga/dfx/synth.tcl",
+    "./fpga/dfx/implement_parent.tcl",
+    "./fpga/dfx/subdivide_children.tcl",
+    "./fpga/dfx/implement_children.tcl",
+    "./fpga/dfx/verify_configurations.tcl",
+    "./fpga/dfx/generate_all_bitstreams.tcl",
 ]
 
 conf = yaml.safe_load(open(config_path))
@@ -28,16 +28,16 @@ for tmpl_file in tmpl_files:
         tmpl.render(**conf)
     )
 
-util_files_dir = "host/dfx/Tcl_HD"
+util_files_dir = "fpga/dfx/Tcl_HD"
 util_dst_dir = os.path.join(dst_dir, "Tcl_HD")
 os.makedirs(util_dst_dir, exist_ok=True)
 for item in os.listdir(util_files_dir):
     item_path = os.path.join(util_files_dir, item)
     shutil.copy2(item_path, util_dst_dir)
-shutil.copy2("host/dfx/advanced_settings.tcl", dst_dir)
-shutil.copy2("host/dfx/design_settings.tcl", dst_dir)
+shutil.copy2("fpga/dfx/advanced_settings.tcl", dst_dir)
+shutil.copy2("fpga/dfx/design_settings.tcl", dst_dir)
 
-pblock_tmpl_file = "host/dfx/Sources/xdc/pblocks.xdc"
+pblock_tmpl_file = "fpga/dfx/Sources/xdc/pblocks.xdc"
 pblock_dst_dir = os.path.join(dst_dir, "Sources/xdc")
 os.makedirs(pblock_dst_dir, exist_ok=True)
 for l1_module in conf["modules"]:

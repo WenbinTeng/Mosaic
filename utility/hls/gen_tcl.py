@@ -7,9 +7,9 @@ if not DEBUG:
     parser = argparse.ArgumentParser()
     args = parser.parse_args()
     
-config_path = "host/hls/hls_conf.yaml"
+config_path = "utility/hls/hls_conf.yaml"
 output_path = "build"
-tmpl_file = "./host/hls/hls_synth.tcl"
+tmpl_file = "./utility/hls/hls_synth.tcl"
 
 conf = yaml.safe_load(open(config_path))
 tmpl = jinja2.Template(open(tmpl_file).read())
