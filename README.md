@@ -1,18 +1,18 @@
-# Mosaic
+# Tetris
 
-**Mosaic** is a research framework for **fine-grained FPGA virtualization** based on **nested dynamic partial reconfiguration**. It enables flexible, scalable, and efficient sharing of FPGA resources among multiple applications.
+**Tetris** is a research framework for **fine-grained FPGA virtualization** based on **nested dynamic partial reconfiguration**. It enables flexible, scalable, and efficient sharing of FPGA resources among multiple applications.
 
 ---
 
 ### Overview
 
-Modern FPGA cloud platforms often suffer from low resource utilization due to coarse-grained partitioning and long reconfiguration overhead. Mosaic addresses these challenges by introducing:
+Modern FPGA cloud platforms often suffer from low resource utilization due to coarse-grained partitioning and long reconfiguration overhead. Tetris addresses these challenges by introducing:
 
 - **Hierarchical** reconfigurable resource management: based on a tree-strutted allocator.
 - Separate stream transmission: through a on-chip fat-tree structure.
 - Compilation time trade-off: through dual-level paging optimization.
 
-Mosaic serves as a foundation for exploring FPGA multi-tenancy, serverless acceleration, and runtime resource optimization.
+Tetris serves as a foundation for exploring FPGA multi-tenancy, serverless acceleration, and runtime resource optimization.
 
 ---
 
@@ -52,7 +52,7 @@ Mosaic serves as a foundation for exploring FPGA multi-tenancy, serverless accel
      
      ```c++
      void top(
-     	din_t in_data[IN_SIZE],
+       din_t in_data[IN_SIZE],
        dout_t out_data[OUT_SIZE]
      ) {
      #pragma HLS INTERFACE ap_ctrl_none port=return
