@@ -109,13 +109,13 @@ void sgd(
         label_local = label_stream.read();
         feature_t dot = _dot_product(theta_local, data_local);
         feature_t prob = _sigmoid(dot);
-        _compute_gradient(grad_local, data_local, prob - label);
+        _compute_gradient(grad_local, data_local, prob - label_local);
         _update_parameter(theta_local, grad_local, -STEP_SIZE);
     }
 
     for (int i = 0; i < NUM_FEATURES; i++) {
 #pragma HLS PIPELINE
-        theta_stream.write(theta[i]);
+        theta_stream.write(theta_local[i]);
     }
 }
 
